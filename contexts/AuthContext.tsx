@@ -1,11 +1,13 @@
 // Powered by OnSpace.AI
-import { createContext, useCallback, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppUser, SafetyAction, UserRole, Vehicle } from '@/services/types';
-import { createDefaultUser } from '@/services/mockData';
+import { colorFromName, createDefaultUser } from '@/services/mockData';
+import { getSharedSupabaseClient } from '@/template/core/client';
 
 const STORAGE_KEY = 'aero.user';
 const SAFETY_KEY = 'aero.safety';
+const DEFAULT_TRIAL_MONTHS = 3;
 
 interface AuthContextValue {
   user: AppUser | null;
@@ -30,30 +32,168 @@ function addMonths(date: Date, months: number): Date {
   return d;
 }
 
+function safeParse<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback;
+
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function mergeUserProfile(base: AppUser, patch: Partial<AppUser>): AppUser {
+  return {
+    ...base,
+    ...patch,
+    vehicle: patch.vehicle ?? base.vehicle,
+  };
+}
+
+function mapSupabaseUserToAppUser(sessionUser: any, fallback: AppUser): AppUser {
+  const metadata = sessionUser?.user_metadata ?? {};
+  const name =
+    metadata.name ||
+    metadata.username ||
+    metadata.full_name ||
+    sessionUser?.email?.split('@')[0] ||
+    fallback.name;
+
+  return mergeUserProfile(fallback, {
+    id: sessionUser.id,
+    name,
+    phone: metadata.phone || fallback.phone,
+    avatarColor: metadata.avatarColor || colorFromName(name),
+    rating: typeof metadata.rating === 'number' ? metadata.rating : fallback.rating,
+    role: metadata.role === 'driver' ? 'driver' : 'passenger',
+    driverStatus:
+      metadata.driverStatus === 'pending' || metadata.driverStatus === 'approved'
+        ? metadata.driverStatus
+        : 'none',
+    trialEndsAt: typeof metadata.trialEndsAt === 'string' ? metadata.trialEndsAt : null,
+    vehicle: metadata.vehicle ?? fallback.vehicle,
+  });
+}
+
+function toSupabaseMetadata(user: AppUser) {
+  return {
+    name: user.name,
+    phone: user.phone,
+    avatarColor: user.avatarColor,
+    rating: user.rating,
+    role: user.role,
+    driverStatus: user.driverStatus,
+    trialEndsAt: user.trialEndsAt,
+    vehicle: user.vehicle ?? null,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<AppUser | null>(createDefaultUser());
   const [safetyActions, setSafetyActions] = useState<SafetyAction[]>([]);
   const [loading, setLoading] = useState(true);
+  const userRef = useRef<AppUser | null>(user);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        const safetyRaw = await AsyncStorage.getItem(SAFETY_KEY);
-        setUser(raw ? (JSON.parse(raw) as AppUser) : createDefaultUser());
-        if (safetyRaw) setSafetyActions(JSON.parse(safetyRaw) as SafetyAction[]);
-      } catch {
-        setUser(createDefaultUser());
-      } finally {
-        setLoading(false);
-      }
-    })();
+    userRef.current = user;
+  }, [user]);
+
+  const persistUser = useCallback(async (next: AppUser) => {
+    userRef.current = next;
+    setUser(next);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+
+    try {
+      const client = getSharedSupabaseClient();
+      const { data: { user: sessionUser } } = await client.auth.getUser();
+      if (!sessionUser) return;
+
+      await client.auth.updateUser({ data: toSupabaseMetadata(next) });
+    } catch {
+      // Keep the local profile usable even when there is no signed-in Supabase session.
+    }
   }, []);
 
-  const persist = useCallback((next: AppUser) => {
-    setUser(next);
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => undefined);
+  useEffect(() => {
+    let mounted = true;
+    let subscription: { unsubscribe: () => void } | null = null;
+
+    const initialize = async () => {
+      try {
+        const [rawUser, rawSafety] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(SAFETY_KEY),
+        ]);
+
+        if (!mounted) return;
+
+        const storedUser = safeParse<AppUser>(rawUser, createDefaultUser());
+        const storedSafety = safeParse<SafetyAction[]>(rawSafety, []);
+
+        setUser(storedUser);
+        userRef.current = storedUser;
+        setSafetyActions(storedSafety);
+
+        const client = getSharedSupabaseClient();
+        const { data: { session } } = await client.auth.getSession();
+
+        if (!mounted) return;
+
+        if (session?.user) {
+          const hydrated = mapSupabaseUserToAppUser(session.user, storedUser);
+          userRef.current = hydrated;
+          setUser(hydrated);
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(hydrated));
+        }
+
+        const { data: { subscription: authSubscription } } = client.auth.onAuthStateChange(async (_event, nextSession) => {
+          if (!mounted) return;
+
+          if (!nextSession?.user) {
+            const fallbackUser = userRef.current ?? storedUser ?? createDefaultUser();
+            userRef.current = fallbackUser;
+            setUser(fallbackUser);
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackUser));
+            return;
+          }
+
+          const nextUser = mapSupabaseUserToAppUser(
+            nextSession.user,
+            userRef.current ?? storedUser ?? createDefaultUser(),
+          );
+
+          userRef.current = nextUser;
+          setUser(nextUser);
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
+        });
+
+        subscription = authSubscription;
+      } catch {
+        if (!mounted) return;
+        setUser((current) => current ?? createDefaultUser());
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void initialize();
+
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
   }, []);
+
+  const updateUser = useCallback(
+    (updater: (current: AppUser) => AppUser) => {
+      const current = userRef.current ?? createDefaultUser();
+      const next = updater(current);
+      void persistUser(next);
+    },
+    [persistUser],
+  );
 
   const persistSafety = useCallback((next: SafetyAction[]) => {
     setSafetyActions(next);
@@ -62,35 +202,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setRole = useCallback(
     (role: UserRole) => {
-      if (!user) return;
-      if (role === 'driver' && user.driverStatus !== 'approved') return;
-      persist({ ...user, role });
+      const current = userRef.current;
+      if (!current) return;
+      if (role === 'driver' && current.driverStatus !== 'approved') return;
+      updateUser((profile) => ({ ...profile, role }));
     },
-    [user, persist],
+    [updateUser],
   );
 
   const submitKyc = useCallback(
     (vehicle: Vehicle) => {
-      if (!user) return;
-      persist({ ...user, driverStatus: 'pending', vehicle });
+      if (!userRef.current) return;
+      updateUser((profile) => ({ ...profile, driverStatus: 'pending', vehicle }));
     },
-    [user, persist],
+    [updateUser],
   );
 
-  // Mock of the admin approval performed from the web backend.
   const approveDriverMock = useCallback(() => {
-    if (!user) return;
-    persist({
-      ...user,
+    if (!userRef.current) return;
+    updateUser((profile) => ({
+      ...profile,
       driverStatus: 'approved',
-      trialEndsAt: addMonths(new Date(), 3).toISOString(),
-    });
-  }, [user, persist]);
+      trialEndsAt: addMonths(new Date(), DEFAULT_TRIAL_MONTHS).toISOString(),
+    }));
+  }, [updateUser]);
 
   const renewSubscriptionMock = useCallback(() => {
-    if (!user) return;
-    persist({ ...user, trialEndsAt: addMonths(new Date(), 1).toISOString() });
-  }, [user, persist]);
+    if (!userRef.current) return;
+    updateUser((profile) => ({ ...profile, trialEndsAt: addMonths(new Date(), 1).toISOString() }));
+  }, [updateUser]);
 
   const reportUser = useCallback(
     (targetName: string, reason: string) => {
@@ -122,9 +262,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteAccount = useCallback(() => {
     const fresh = createDefaultUser();
     fresh.name = 'Utilizator nou';
-    persist(fresh);
+    void persistUser(fresh);
     persistSafety([]);
-  }, [persist, persistSafety]);
+
+    try {
+      const client = getSharedSupabaseClient();
+      void client.auth.signOut();
+    } catch {
+      // Local profile reset is enough if no Supabase session exists.
+    }
+  }, [persistUser, persistSafety]);
 
   const isTrialActive = useMemo(() => {
     if (!user || user.driverStatus !== 'approved' || !user.trialEndsAt) return false;

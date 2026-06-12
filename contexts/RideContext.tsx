@@ -1,8 +1,17 @@
 // Powered by OnSpace.AI
-import { createContext, useCallback, useMemo, useRef, useState, ReactNode } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { DriverRequest, Place, Ride, RideOffer, RideStatus } from '@/services/types';
 import { CURRENT_LOCATION, seedDriverRequests } from '@/services/mockData';
 import { estimateRoute, generateOffers } from '@/services/rideService';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  claimDriverRequest,
+  loadNearbyDriverRequests,
+  loadRideHistory,
+  savePassengerRideRequest,
+  saveRide,
+  updateRideStatus,
+} from '@/services/rideBackend';
 
 interface RideContextValue {
   // passenger flow
@@ -38,6 +47,7 @@ interface RideContextValue {
 export const RideContext = createContext<RideContextValue | undefined>(undefined);
 
 export function RideProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const pickup = CURRENT_LOCATION;
   const [dropoff, setDropoffState] = useState<Place | null>(null);
   const [distanceKm, setDistanceKm] = useState(0);
@@ -54,6 +64,31 @@ export function RideProvider({ children }: { children: ReactNode }) {
   const [driverActiveRide, setDriverActiveRide] = useState<Ride | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const syncDriverRequests = async () => {
+      const requests = await loadNearbyDriverRequests(user?.id);
+      if (!mounted) return;
+
+      setNearbyRequests(requests.length > 0 ? requests : seedDriverRequests());
+    };
+
+    const syncHistory = async () => {
+      const rides = await loadRideHistory(user?.id);
+      if (!mounted) return;
+
+      setHistory(rides);
+    };
+
+    void syncDriverRequests();
+    void syncHistory();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   const setDropoff = useCallback(
     (place: Place) => {
@@ -87,12 +122,25 @@ export function RideProvider({ children }: { children: ReactNode }) {
     if (!dropoff) return;
     setStatus('requesting');
     setOffers([]);
+
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setOffers(generateOffers(offeredPrice));
       setStatus('offers');
     }, 2200);
-  }, [dropoff, offeredPrice]);
+
+    void savePassengerRideRequest({
+      ownerId: user?.id,
+      passengerName: user?.name,
+      avatarColor: user?.avatarColor,
+      rating: user?.rating,
+      pickup,
+      dropoff,
+      distanceKm,
+      durationMin,
+      offeredPrice,
+    });
+  }, [dropoff, offeredPrice, user?.id, pickup, distanceKm, durationMin]);
 
   const acceptOffer = useCallback(
     (offer: RideOffer) => {
@@ -112,14 +160,24 @@ export function RideProvider({ children }: { children: ReactNode }) {
       };
       setActiveRide(ride);
       setStatus('accepted');
+
+      void saveRide({
+        ownerId: user?.id,
+        ride,
+        status: 'accepted',
+      });
     },
-    [dropoff, pickup, distanceKm, durationMin, recommendedPrice, offeredPrice],
+    [dropoff, pickup, distanceKm, durationMin, recommendedPrice, offeredPrice, user?.id],
   );
 
   const startRide = useCallback(() => {
-    setActiveRide((prev) => (prev ? { ...prev, status: 'inprogress' } : prev));
+    setActiveRide((prev) => {
+      if (!prev) return prev;
+      void updateRideStatus({ rideId: prev.id, status: 'inprogress', ownerId: user?.id });
+      return { ...prev, status: 'inprogress' };
+    });
     setStatus('inprogress');
-  }, []);
+  }, [user?.id]);
 
   const resetPassenger = useCallback(() => {
     setDropoffState(null);
@@ -137,22 +195,33 @@ export function RideProvider({ children }: { children: ReactNode }) {
       if (prev) {
         const done: Ride = { ...prev, status: 'completed' };
         setHistory((h) => [done, ...h]);
+        void updateRideStatus({ rideId: prev.id, status: 'completed', ownerId: user?.id });
       }
       return prev;
     });
     resetPassenger();
-  }, [resetPassenger]);
+  }, [resetPassenger, user?.id]);
 
   const cancelRide = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
+    setActiveRide((prev) => {
+      if (prev) {
+        void updateRideStatus({ rideId: prev.id, status: 'cancelled', ownerId: user?.id });
+      }
+      return prev;
+    });
     resetPassenger();
-  }, [resetPassenger]);
+  }, [resetPassenger, user?.id]);
 
   // ---- Driver ----
   const goOnline = useCallback(() => {
     setIsOnline(true);
     setNearbyRequests(seedDriverRequests());
-  }, []);
+
+    void loadNearbyDriverRequests(user?.id).then((requests) => {
+      setNearbyRequests(requests.length > 0 ? requests : seedDriverRequests());
+    });
+  }, [user?.id]);
 
   const goOffline = useCallback(() => {
     setIsOnline(false);
@@ -185,7 +254,13 @@ export function RideProvider({ children }: { children: ReactNode }) {
     };
     setDriverActiveRide(ride);
     setNearbyRequests((prev) => prev.filter((r) => r.id !== req.id));
-  }, []);
+
+    void claimDriverRequest({
+      requestId: req.id,
+      ownerId: user?.id,
+      ride,
+    });
+  }, [user?.id]);
 
   const ignoreRequest = useCallback((id: string) => {
     setNearbyRequests((prev) => prev.filter((r) => r.id !== id));
@@ -196,10 +271,11 @@ export function RideProvider({ children }: { children: ReactNode }) {
       if (prev) {
         const done: Ride = { ...prev, status: 'completed' };
         setHistory((h) => [done, ...h]);
+        void updateRideStatus({ rideId: prev.id, status: 'completed', ownerId: user?.id });
       }
       return null;
     });
-  }, []);
+  }, [user?.id]);
 
   const value = useMemo(
     () => ({
