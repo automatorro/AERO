@@ -10,7 +10,7 @@ const TONE: Record<Tone, { bg: string; fg: string }> = {
   success: { bg: colors.successSoft, fg: colors.success },
   warning: { bg: colors.warningSoft, fg: '#B45309' },
   danger: { bg: colors.dangerSoft, fg: colors.danger },
-  primary: { bg: colors.primarySoft, fg: colors.primaryDark },
+  primary: { bg: colors.primarySoft, fg: colors.primary },
 };
 
 interface BadgeProps {

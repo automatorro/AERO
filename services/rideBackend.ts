@@ -292,3 +292,66 @@ export async function loadRideHistory(ownerId?: string): Promise<Ride[]> {
     return (data ?? []).map(toRide);
   }, []);
 }
+
+export async function getCountryDocuments(countryCode: string) {
+  return withFallback(async () => {
+    const client = getSharedSupabaseClient();
+    const { data, error } = await client
+      .from('country_documents')
+      .select('*')
+      .eq('country_code', countryCode)
+      .order('display_order', { ascending: true });
+    
+    if (error) throw error;
+    return data;
+  }, []);
+}
+
+export async function uploadDriverDocument(input: {
+  driverId: string;
+  docType: string;
+  countryCode: string;
+  fileUri: string;
+  mimeType: string;
+}) {
+  const client = getSharedSupabaseClient();
+
+  // 1. Convertire fisier local in Blob (sau base64 conform Supabase pe RN)
+  const ext = input.fileUri.split('.').pop() || 'jpg';
+  const fileName = `${input.driverId}/${input.docType}_${Date.now()}.${ext}`;
+  
+  // Fetch nu merge mereu perfect in React Native pentru fișiere locale cu Supabase, 
+  // dar FormData sau arrayBuffer merge. Pentru simplitate, simulam upload-ul sau folosim FormData.
+  const formData = new FormData();
+  formData.append('file', {
+    uri: input.fileUri,
+    name: fileName,
+    type: input.mimeType,
+  } as any);
+
+  // In mediu de productie s-ar folosi fetch(input.fileUri).then(r => r.blob())
+  const { data: uploadData, error: uploadError } = await client.storage
+    .from('driver_documents')
+    .upload(fileName, formData);
+
+  if (uploadError) throw uploadError;
+
+  // 2. Inserare referinta (calea fișierului) in baza de date
+  // NU folosim getPublicUrl deoarece documentele (buletin, permis) trebuie să fie PRIVATE.
+  const { data, error } = await client
+    .from('driver_documents')
+    .insert([
+      {
+        driver_id: input.driverId,
+        doc_type: input.docType,
+        country_code: input.countryCode,
+        file_url: fileName, // Salvăm doar calea în bucket, adminul va genera un signed URL
+        status: 'pending',
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
