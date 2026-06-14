@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Passenger Home (Ride tab)
 // Placeholder temporar — va fi înlocuit în Etapa 3
 import { View, Text, StyleSheet, Pressable } from 'react-native';
@@ -12,6 +13,7 @@ import { CURRENT_LOCATION, PLACES, CURRENCY } from '@/services/mockData';
 import type { MapPin } from '@/components';
 
 export default function PassengerRideScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -37,8 +39,8 @@ export default function PassengerRideScreen() {
             <Text style={styles.avatarText}>{(user?.name ?? 'A').charAt(0).toUpperCase()}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.hello}>Salut, {user?.name?.split(' ')[0] ?? 'pasager'} 👋</Text>
-            <Text style={styles.sub}>Unde te ducem azi?</Text>
+            <Text style={styles.hello}>{t('ride_greeting_prefix')}{user?.name?.split(' ')[0] ?? t('ride_greeting_fallback')} 👋</Text>
+            <Text style={styles.sub}>{t('ride_greeting_subtitle')}</Text>
           </View>
           <MaterialIcons name="notifications-none" size={24} color={colors.text} />
         </View>
@@ -50,7 +52,7 @@ export default function PassengerRideScreen() {
           <Pressable style={styles.activeBanner} onPress={() => router.push('/(passenger)/active')}>
             <MaterialIcons name="directions-car" size={22} color="#fff" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.activeTitle}>Cursă în desfășurare</Text>
+              <Text style={styles.activeTitle}>{t('ride_active_banner_title')}</Text>
               <Text style={styles.activeSub}>
                 {activeRide.offer?.driverName} · {activeRide.finalPrice} {CURRENCY}
               </Text>
@@ -61,7 +63,7 @@ export default function PassengerRideScreen() {
 
         <Pressable style={styles.searchBar} onPress={() => router.push('/(passenger)/request')}>
           <MaterialIcons name="search" size={20} color={colors.textFaint} />
-          <Text style={styles.searchText}>Unde mergi?</Text>
+          <Text style={styles.searchText}>{t('ride_search_placeholder')}</Text>
         </Pressable>
 
         <View style={styles.quickRow}>

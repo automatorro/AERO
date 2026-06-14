@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Login Screen
 import { useState } from 'react';
 import {
@@ -18,6 +19,7 @@ import { colors, fontSize, fontWeight, radius, spacing } from '@/constants/theme
 import { getSharedSupabaseClient } from '@/template/core/client';
 
 export default function LoginScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -29,7 +31,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      setError('Completează toate câmpurile.');
+      setError(t('login_error_empty_fields'));
       return;
     }
     setError('');
@@ -50,7 +52,7 @@ export default function LoginScreen() {
         router.replace('/(passenger)/ride');
       }
     } catch (err: any) {
-      setError(err?.message ?? 'Autentificare eșuată. Verifică datele și încearcă din nou.');
+      setError(err?.message ?? t('login_error_auth_failed'));
     } finally {
       setLoading(false);
     }
@@ -76,14 +78,14 @@ export default function LoginScreen() {
             <MaterialIcons name="flight" size={18} color={colors.accent} />
             <Text style={styles.logoText}>AERO</Text>
           </View>
-          <Text style={styles.title}>Bun venit înapoi</Text>
-          <Text style={styles.subtitle}>Conectează-te la contul tău</Text>
+          <Text style={styles.title}>{t('login_welcome_back')}</Text>
+          <Text style={styles.subtitle}>{t('login_subtitle')}</Text>
         </View>
 
         <View style={styles.form}>
           {/* Email */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t('login_label_email')}</Text>
             <View style={styles.inputWrap}>
               <MaterialIcons name="email" size={18} color={colors.textFaint} style={styles.inputIcon} />
               <TextInput
@@ -101,12 +103,12 @@ export default function LoginScreen() {
 
           {/* Password */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Parolă</Text>
+            <Text style={styles.label}>{t('login_label_password')}</Text>
             <View style={styles.inputWrap}>
               <MaterialIcons name="lock" size={18} color={colors.textFaint} style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, { paddingRight: 48 }]}
-                placeholder="Minim 6 caractere"
+                placeholder={t('login_placeholder_password')}
                 placeholderTextColor={colors.textFaint}
                 value={password}
                 onChangeText={setPassword}
@@ -136,16 +138,16 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.btnPrimaryText}>Conectează-te</Text>
+              <Text style={styles.btnPrimaryText}>{t('login_btn_submit')}</Text>
             )}
           </Pressable>
         </View>
 
         {/* Register link */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Nu ai cont? </Text>
+          <Text style={styles.footerText}>{t('login_no_account_spaced')}</Text>
           <Pressable onPress={() => router.push('/(auth)/register')}>
-            <Text style={[styles.footerText, styles.footerLink]}>Înregistrează-te</Text>
+            <Text style={[styles.footerText, styles.footerLink]}>{t('login_link_register')}</Text>
           </Pressable>
         </View>
       </ScrollView>

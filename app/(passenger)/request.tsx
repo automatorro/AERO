@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Request Ride (Pasager)
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
@@ -13,12 +14,13 @@ import { savePassengerRideRequest } from '@/services/rideBackend';
 import { useAlert } from '@/template';
 
 const CLASSES = [
-  { id: 'aero', name: 'AERO', desc: 'Curse rapide și accesibile', icon: 'local-taxi' },
-  { id: 'plus', name: 'AERO+', desc: 'Mașini mai spațioase', icon: 'airport-shuttle' },
-  { id: 'vip', name: 'VIP', desc: 'Premium & Business', icon: 'directions-car' },
+  { id: 'aero', name: t('request_class_aero_name'), desc: t('request_class_aero_desc'), icon: 'local-taxi' },
+  { id: 'plus', name: t('request_class_plus_name'), desc: t('request_class_plus_desc'), icon: 'airport-shuttle' },
+  { id: 'vip', name: t('request_class_vip_name'), desc: t('request_class_vip_desc'), icon: 'directions-car' },
 ];
 
 export default function RequestRideScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pickup, dropoff, sendRequest } = useRide();
@@ -33,8 +35,8 @@ export default function RequestRideScreen() {
   if (!pickup || !dropoff) {
     return (
       <View style={[styles.container, styles.center]}>
-        <Text>Alege o destinație mai întâi.</Text>
-        <Button label="Înapoi" onPress={() => router.back()} />
+        <Text>{t('request_error_no_destination')}</Text>
+        <Button label={t('common_back')} onPress={() => router.back()} />
       </View>
     );
   }
@@ -87,7 +89,7 @@ export default function RequestRideScreen() {
           <Text style={styles.meta}>{dist.toFixed(1)} km · {dur} min</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Alege clasa</Text>
+        <Text style={styles.sectionTitle}>{t('request_class_title')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classList}>
           {CLASSES.map(c => {
             const isSel = selectedClass === c.id;
@@ -102,8 +104,8 @@ export default function RequestRideScreen() {
         </ScrollView>
 
         <View style={styles.priceSection}>
-          <Text style={styles.sectionTitle}>Oferă un preț</Text>
-          <Text style={styles.priceSub}>Sugerăm {basePrice} {CURRENCY}. Crește oferta pentru a găsi șofer mai repede.</Text>
+          <Text style={styles.sectionTitle}>{t('request_price_title')}</Text>
+          <Text style={styles.priceSub}>{t('request_price_sub', { basePrice, currency: CURRENCY })}</Text>
           <View style={styles.priceControls}>
             <Pressable style={styles.priceBtn} onPress={() => setOfferOffset(o => o - 1)}>
               <MaterialIcons name="remove" size={24} color={colors.text} />
@@ -116,7 +118,7 @@ export default function RequestRideScreen() {
         </View>
 
         <Button 
-          label={`Cere AERO (${finalOffer} ${CURRENCY})`} 
+          label={t('request_btn_submit_price', { price: finalOffer, currency: CURRENCY })} 
           fullWidth size="lg" 
           disabled={isSubmitting}
           onPress={handleRequest} 

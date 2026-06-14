@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Căutare Șoferi + Oferte Pasager
 import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated, Pressable } from 'react-native';
@@ -10,6 +11,7 @@ import { useRide } from '@/hooks/useRide';
 import { CURRENCY } from '@/services/mockData';
 
 export default function SearchingScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pickup, dropoff, status, offers, acceptOffer, cancelRide } = useRide();
@@ -72,12 +74,12 @@ export default function SearchingScreen() {
             <View style={styles.radarCenter}>
               <MaterialIcons name="search" size={32} color="#fff" />
             </View>
-            <Text style={styles.searchingText}>Căutăm șoferi în apropiere...</Text>
-            <Button label="Anulează" variant="ghost" onPress={handleCancel} />
+            <Text style={styles.searchingText}>{t('searching_text')}</Text>
+            <Button label={t('searching_cancel_btn')} variant="ghost" onPress={handleCancel} />
           </View>
         ) : (
           <View style={styles.offersWrap}>
-            <Text style={styles.offersTitle}>Oferte primite ({offers.length})</Text>
+            <Text style={styles.offersTitle}>{t('searching_offers_title', { count: offers.length })}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.offersList}>
               {offers.map(offer => (
                 <Card key={offer.id} style={styles.offerCard} padded>
@@ -102,7 +104,7 @@ export default function SearchingScreen() {
                     </View>
                     <Text style={styles.price}>{offer.price} {CURRENCY}</Text>
                   </View>
-                  <Button label="Acceptă oferta" fullWidth onPress={() => acceptOffer(offer)} />
+                  <Button label={t('searching_accept_offer_btn')} fullWidth onPress={() => acceptOffer(offer)} />
                 </Card>
               ))}
             </ScrollView>

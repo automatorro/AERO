@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Admin Tab Navigator
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
@@ -6,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontWeight } from '@/constants/theme';
 
 export default function AdminLayout() {
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
 
   return (
@@ -36,7 +38,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="drivers"
         options={{
-          title: 'Șoferi',
+          title: t('tab_admin_drivers'),
           tabBarIcon: ({ color, size }) => <MaterialIcons name="people" size={size} color={color} />,
         }}
       />

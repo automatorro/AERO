@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Cursă Activă (Pasager)
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
@@ -11,6 +12,7 @@ import { CURRENCY } from '@/services/mockData';
 import { useAlert } from '@/template';
 
 export default function ActiveRideScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { activeRide, completeRide, status } = useRide();
@@ -52,9 +54,9 @@ export default function ActiveRideScreen() {
   const handleSOS = async () => {
     try {
       await require('@/services/rideBackend').triggerSOS(require('@/hooks/useAuth').useAuth().user?.id, offer.driverName);
-      showAlert('SOS Activ', 'Echipa AERO a fost alertată și monitorizează cursa!', [{ text: 'Închide' }]);
+      showAlert(t('active_sos_alerted_title'), t('active_sos_alerted'), [{ text: t('active_close_btn') }]);
     } catch (e) {
-      showAlert('Eroare', 'Eroare la alertare.');
+      showAlert(t('common_error'), t('active_sos_alert_error'));
     }
   };
 
@@ -79,13 +81,13 @@ export default function ActiveRideScreen() {
           <Text style={styles.etaText}>min</Text>
         </View>
         <Pressable style={styles.sosBtn} onPress={handleSOS}>
-          <Text style={styles.sosText}>SOS</Text>
+          <Text style={styles.sosText}>{t('active_sos_btn')}</Text>
         </Pressable>
       </View>
 
       <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}>
         <Text style={styles.statusText}>
-          {driverPos < 0.1 ? 'Șoferul este pe drum' : driverPos < 0.9 ? 'Cursa este în desfășurare' : 'Aproape ați ajuns'}
+          {driverPos < 0.1 ? t('active_status_ontheway') : driverPos < 0.9 ? t('active_status_inprogress') : t('active_status_arrived')}
         </Text>
 
         <Card style={styles.driverCard} padded>
@@ -119,15 +121,15 @@ export default function ActiveRideScreen() {
         <View style={styles.actionsRow}>
           <Pressable style={styles.actionBtn} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: activeRide.id } })}>
             <MaterialIcons name="chat" size={24} color={colors.text} />
-            <Text style={styles.actionText}>Chat</Text>
+            <Text style={styles.actionText}>{t('active_chat_btn')}</Text>
           </Pressable>
           <Pressable style={styles.actionBtn}>
             <MaterialIcons name="share" size={24} color={colors.text} />
-            <Text style={styles.actionText}>Share</Text>
+            <Text style={styles.actionText}>{t('active_share_btn')}</Text>
           </Pressable>
           <Pressable style={styles.actionBtn} onPress={handleCompleteMock}>
             <MaterialIcons name="check-circle" size={24} color={colors.success} />
-            <Text style={styles.actionText}>Finalizează</Text>
+            <Text style={styles.actionText}>{t('active_complete_btn')}</Text>
           </Pressable>
         </View>
       </View>

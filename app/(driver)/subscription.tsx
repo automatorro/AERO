@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Abonament Șoferi
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Platform } from 'react-native';
@@ -10,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAlert } from '@/template';
 
 export default function SubscriptionScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { renewSubscriptionMock } = useAuth();
@@ -28,8 +30,8 @@ export default function SubscriptionScreen() {
     setTimeout(() => {
       renewSubscriptionMock();
       setIsProcessing(false);
-      showAlert('Plată Confirmată', 'Abonamentul AERO Flex a fost activat! Poți prelua curse din nou.', [
-        { text: 'Mergi la Radar', onPress: () => router.replace('/(driver)/drive') }
+      showAlert(t('sub_payment_confirmed_title'), t('sub_success_message'), [
+        { text: t('sub_btn_radar'), onPress: () => router.replace('/(driver)/drive') }
       ]);
     }, 1500);
   };
@@ -47,8 +49,8 @@ export default function SubscriptionScreen() {
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}>
         <View style={styles.hero}>
           <FontAwesome5 name="crown" size={48} color={colors.primary} />
-          <Text style={styles.heroTitle}>AERO Flex</Text>
-          <Text style={styles.heroSub}>Păstrezi 100% din banii pe cursă, cu 0 comision.</Text>
+          <Text style={styles.heroTitle}>{t('sub_title')}</Text>
+          <Text style={styles.heroSub}>{t('sub_hero_desc')}</Text>
         </View>
 
         <Card style={styles.pricingCard}>
@@ -57,17 +59,17 @@ export default function SubscriptionScreen() {
         </Card>
 
         <View style={styles.benefits}>
-          <Text style={styles.sectionTitle}>Ce include abonamentul?</Text>
-          <Benefit text="Comision 0% la toate cursele" icon="money-off" />
-          <Benefit text="Acces la toate tipurile de cereri (AERO, VIP)" icon="verified" />
-          <Benefit text="Plăți zilnice direct în contul tău" icon="account-balance-wallet" />
-          <Benefit text="Suport prioritar In-App 24/7" icon="support-agent" />
+          <Text style={styles.sectionTitle}>{t('sub_benefits_title')}</Text>
+          <Benefit text={t('sub_benefit_1')} icon="money-off" />
+          <Benefit text={t('sub_benefit_2')} icon="verified" />
+          <Benefit text={t('sub_benefit_4')} icon="account-balance-wallet" />
+          <Benefit text={t('sub_benefit_3_driver')} icon="support-agent" />
         </View>
 
         <View style={{ height: spacing.xl }} />
 
         <Button 
-          label={isProcessing ? 'Se procesează plata...' : 'Plătește sigur prin Stripe'} 
+          label={isProcessing ? t('sub_processing') : t('sub_btn_pay')} 
           fullWidth 
           size="lg" 
           icon={isProcessing ? undefined : 'lock'}
@@ -75,7 +77,7 @@ export default function SubscriptionScreen() {
           onPress={handleSubscribe} 
         />
         <Text style={styles.footerText}>
-          Plata este securizată de Stripe. Abonamentul se va reînnoi automat în fiecare lună. Poți anula oricând din setări.
+          {t('sub_footer_text')}
         </Text>
       </ScrollView>
     </View>

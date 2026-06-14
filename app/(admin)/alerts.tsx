@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Admin: SOS Alerts
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +17,7 @@ interface AlertRow {
 }
 
 export default function AdminAlerts() {
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,8 +76,8 @@ export default function AdminAlerts() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
-        <Text style={styles.headerTitle}>Alerte & Rapoarte</Text>
-        <Text style={styles.headerSub}>Live monitoring · Realtime</Text>
+        <Text style={styles.headerTitle}>{t('admin_alerts_title')}</Text>
+        <Text style={styles.headerSub}>{t('admin_alerts_subtitle')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: spacing.md, paddingBottom: insets.bottom + spacing.xl }}>
@@ -84,7 +86,7 @@ export default function AdminAlerts() {
         ) : alerts.length === 0 ? (
           <View style={styles.emptyWrap}>
             <MaterialIcons name="verified-user" size={48} color="#22C55E" />
-            <Text style={styles.emptyText}>Nicio alertă activă</Text>
+            <Text style={styles.emptyText}>{t('admin_alerts_empty')}</Text>
           </View>
         ) : (
           alerts.map(a => (

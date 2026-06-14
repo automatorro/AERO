@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Admin: Verificare Șoferi
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +19,7 @@ interface DriverRow {
 }
 
 export default function AdminDrivers() {
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
   const [drivers, setDrivers] = useState<DriverRow[]>([]);
@@ -58,10 +60,10 @@ export default function AdminDrivers() {
       }).eq('id', driverId);
 
       if (error) throw error;
-      showAlert('Aprobat ✅', 'Șoferul a fost aprobat și are 3 luni trial.');
+      showAlert(t('admin_drivers_approved_alert_title'), t('admin_drivers_approved_alert'));
       fetchDrivers();
     } catch (e) {
-      showAlert('Eroare', 'Nu s-a putut aproba șoferul.');
+      showAlert(t('common_error'), t('admin_drivers_error_approve'));
     }
   };
 
@@ -72,17 +74,17 @@ export default function AdminDrivers() {
         driver_status: 'none',
       }).eq('id', driverId);
       if (error) throw error;
-      showAlert('Respins', 'Șoferul a fost respins.');
+      showAlert(t('admin_drivers_rejected_alert_title'), t('admin_drivers_rejected_alert'));
       fetchDrivers();
     } catch (e) {
-      showAlert('Eroare', 'Nu s-a putut respinge șoferul.');
+      showAlert(t('common_error'), t('admin_drivers_error_reject'));
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
-        <Text style={styles.headerTitle}>Verificare Șoferi</Text>
+        <Text style={styles.headerTitle}>{t('admin_drivers_title')}</Text>
         <View style={styles.filterRow}>
           {(['pending', 'approved', 'all'] as const).map(f => (
             <Pressable
@@ -91,7 +93,7 @@ export default function AdminDrivers() {
               onPress={() => setFilter(f)}
             >
               <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
-                {f === 'pending' ? 'În Așteptare' : f === 'approved' ? 'Aprobați' : 'Toți'}
+                {f === 'pending' ? t('admin_drivers_filter_pending') : f === 'approved' ? t('admin_drivers_filter_approved') : t('admin_drivers_filter_all')}
               </Text>
             </Pressable>
           ))}
@@ -104,7 +106,7 @@ export default function AdminDrivers() {
         ) : drivers.length === 0 ? (
           <View style={styles.emptyWrap}>
             <MaterialIcons name="check-circle" size={48} color="#22C55E" />
-            <Text style={styles.emptyText}>Niciun șofer {filter === 'pending' ? 'în așteptare' : ''}</Text>
+            <Text style={styles.emptyText}>{t('admin_drivers_empty')}</Text>
           </View>
         ) : (
           drivers.map(d => (
@@ -138,11 +140,11 @@ export default function AdminDrivers() {
                 <View style={styles.actionsRow}>
                   <Pressable style={[styles.actionBtn, styles.approveBtn]} onPress={() => approveDriver(d.id)}>
                     <MaterialIcons name="check" size={18} color="#FFF" />
-                    <Text style={styles.actionText}>Aprobă</Text>
+                    <Text style={styles.actionText}>{t('admin_drivers_btn_approve')}</Text>
                   </Pressable>
                   <Pressable style={[styles.actionBtn, styles.rejectBtn]} onPress={() => rejectDriver(d.id)}>
                     <MaterialIcons name="close" size={18} color="#FFF" />
-                    <Text style={styles.actionText}>Respinge</Text>
+                    <Text style={styles.actionText}>{t('admin_drivers_btn_reject')}</Text>
                   </Pressable>
                 </View>
               )}

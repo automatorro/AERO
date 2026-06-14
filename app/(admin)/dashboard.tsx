@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Admin Dashboard
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +27,7 @@ function StatCard({ icon, label, value, color }: { icon: any; label: string; val
 }
 
 export default function AdminDashboard() {
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0, totalDrivers: 0, pendingDrivers: 0,
@@ -69,22 +71,22 @@ export default function AdminDashboard() {
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <Text style={styles.logo}>AERO</Text>
-        <Text style={styles.headerTitle}>Admin Panel</Text>
+        <Text style={styles.headerTitle}>{t('admin_dash_title')}</Text>
       </View>
 
       <View style={styles.grid}>
         <StatCard icon="people" label="Total Utilizatori" value={stats.totalUsers} color="#3B82F6" />
-        <StatCard icon="local-taxi" label="Șoferi Activi" value={stats.totalDrivers} color="#22C55E" />
-        <StatCard icon="pending" label="Șoferi în Așteptare" value={stats.pendingDrivers} color="#F59E0B" />
+        <StatCard icon="local-taxi" label={t('admin_dash_active_drivers')} value={stats.totalDrivers} color="#22C55E" />
+        <StatCard icon="pending" label={t('admin_dash_pending_drivers')} value={stats.pendingDrivers} color="#F59E0B" />
         <StatCard icon="receipt-long" label="Total Curse" value={stats.totalRides} color="#8B5CF6" />
         <StatCard icon="play-circle" label="Curse Active" value={stats.activeRides} color="#06B6D4" />
         <StatCard icon="warning" label="Alerte SOS" value={stats.sosAlerts} color="#EF4444" />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Acțiuni Rapide</Text>
+        <Text style={styles.sectionTitle}>{t('admin_dash_actions_title')}</Text>
         <Text style={styles.infoText}>
-          Folosește tab-urile de mai jos pentru a gestiona verificarea șoferilor, alertele SOS și configurația platformei.
+          {t('admin_dash_actions_desc')}
         </Text>
       </View>
     </ScrollView>

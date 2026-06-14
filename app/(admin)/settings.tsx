@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Admin: Settings / Config
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { useAlert } from '@/template';
 import { getSharedSupabaseClient } from '@/template/core/client';
 
 export default function AdminSettings() {
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { showAlert } = useAlert();
@@ -20,11 +22,11 @@ export default function AdminSettings() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
-        <Text style={styles.headerTitle}>Configurări Admin</Text>
+        <Text style={styles.headerTitle}>{t('admin_settings_title')}</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Platformă</Text>
+        <Text style={styles.sectionTitle}>{t('admin_settings_section_platform')}</Text>
         <View style={styles.card}>
           <Row icon="info" label="Versiune" value="1.0.0-beta" />
           <View style={styles.divider} />
@@ -35,23 +37,23 @@ export default function AdminSettings() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Setări Prețuri</Text>
+        <Text style={styles.sectionTitle}>{t('admin_settings_section_pricing')}</Text>
         <View style={styles.card}>
-          <Row icon="attach-money" label="Preț minim cursă" value="5 RON" />
+          <Row icon="attach-money" label={t('admin_settings_label_min_price')} value="5 RON" />
           <View style={styles.divider} />
           <Row icon="credit-card" label="Abonament lunar" value="50 RON" />
           <View style={styles.divider} />
-          <Row icon="percent" label="Comision platformă" value="0%" />
+          <Row icon="percent" label={t('admin_settings_label_commission')} value="0%" />
           <View style={styles.divider} />
           <Row icon="card-giftcard" label="Trial (luni)" value="3" />
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Acțiuni</Text>
+        <Text style={styles.sectionTitle}>{t('admin_settings_section_actions')}</Text>
         <Pressable style={styles.dangerBtn} onPress={handleLogout}>
           <MaterialIcons name="logout" size={20} color="#FFF" />
-          <Text style={styles.dangerBtnText}>Deconectare Admin</Text>
+          <Text style={styles.dangerBtnText}>{t('admin_settings_btn_logout')}</Text>
         </Pressable>
       </View>
     </ScrollView>

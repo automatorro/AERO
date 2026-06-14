@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Driver Subscription (Passes tab)
 import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,6 +9,7 @@ import { Button } from '@/components';
 import { useAlert } from '@/template';
 
 export default function DriverPassesScreen() {
+  const { t } = useI18n();
   const { user, isTrialActive, trialDaysLeft, renewSubscriptionMock } = useAuth();
   const { showAlert } = useAlert();
 
@@ -15,7 +17,7 @@ export default function DriverPassesScreen() {
 
   return (
     <Screen>
-      <Header title="Abonamentul meu" />
+      <Header title={t('driver_passes_title')} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
         {/* Status curent */}
@@ -31,51 +33,51 @@ export default function DriverPassesScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.statusTitle}>
                 {driverStatus === 'approved' && isTrialActive
-                  ? `Trial activ — ${trialDaysLeft} zile rămase`
+                  ? t('profile_trial_active', { days: trialDaysLeft })
                   : driverStatus === 'approved'
-                  ? 'Abonament expirat'
+                  ? t('driver_expired_title')
                   : driverStatus === 'pending'
-                  ? 'Cont în verificare'
-                  : 'Cont neînregistrat'}
+                  ? t('driver_passes_status_pending')
+                  : t('driver_passes_status_unregistered')}
               </Text>
               <Text style={styles.statusSub}>
                 {isTrialActive
-                  ? 'Prima lună gratuită'
-                  : 'Reînnoiește pentru a prelua curse'}
+                  ? t('driver_passes_trial_sub')
+                  : t('driver_expired_text')}
               </Text>
             </View>
           </View>
         </Card>
 
         {/* Plan disponibil */}
-        <Text style={styles.sectionLabel}>Plan disponibil</Text>
+        <Text style={styles.sectionLabel}>{t('driver_passes_plan_name')}</Text>
         <Card style={styles.planCard}>
           <View style={styles.planTop}>
             <View>
-              <Text style={styles.planName}>Plan Standard</Text>
-              <Text style={styles.planDesc}>Acces complet la toate cursele</Text>
+              <Text style={styles.planName}>{t('driver_passes_plan_name')}</Text>
+              <Text style={styles.planDesc}>{t('driver_passes_plan_desc')}</Text>
             </View>
             <View style={styles.planPrice}>
               <Text style={styles.planAmount}>500</Text>
-              <Text style={styles.planCurrency}>RON/lună</Text>
+              <Text style={styles.planCurrency}>{t('driver_passes_plan_period')}</Text>
             </View>
           </View>
           <View style={styles.planFeatures}>
-            <PlanFeature text="Comision 0% — păstrezi 100% din cursă" />
-            <PlanFeature text="Cereri curse nelimitate" />
-            <PlanFeature text="Chat + navigație integrată" />
-            <PlanFeature text="Prima lună gratuită" />
+            <PlanFeature text={t('sub_benefit_1')} />
+            <PlanFeature text={t('driver_passes_plan_feature_1')} />
+            <PlanFeature text={t('sub_benefit_3')} />
+            <PlanFeature text={t('driver_passes_trial_sub')} />
           </View>
           <Button
-            label="Activează abonament"
+            label={t('driver_passes_btn_activate')}
             fullWidth
             icon="card-membership"
-            onPress={() => showAlert('Stripe', 'Integrare Stripe Subscriptions — disponibil în curând.')}
+            onPress={() => showAlert(t('sub_title'), t('driver_passes_btn_activate_stripe_mock'))}
           />
         </Card>
 
         {/* Cont bancar */}
-        <Text style={styles.sectionLabel}>Cont bancar</Text>
+        <Text style={styles.sectionLabel}>{t('driver_passes_bank_section')}</Text>
         <Card>
           <View style={styles.bankRow}>
             <View style={styles.bankIcon}>
@@ -84,14 +86,14 @@ export default function DriverPassesScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.bankTitle}>Stripe Connect</Text>
               <Text style={styles.bankSub}>
-                {user?.vehicle ? 'Conectat' : 'Neconectat — conectează pentru a primi plăți'}
+                {user?.vehicle ? t('driver_passes_bank_connected') : t('driver_passes_bank_disconnected')}
               </Text>
             </View>
             <Pressable
               style={styles.bankBtn}
-              onPress={() => showAlert('Stripe Connect', 'Onboarding Stripe — disponibil în curând.')}
+              onPress={() => showAlert(t('driver_passes_bank_section'), t('driver_passes_bank_onboarding_mock'))}
             >
-              <Text style={styles.bankBtnText}>Configurează</Text>
+              <Text style={styles.bankBtnText}>{t('driver_passes_btn_setup')}</Text>
             </Pressable>
           </View>
         </Card>

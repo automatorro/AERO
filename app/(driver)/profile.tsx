@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Driver Profile
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, Pressable } from 'react-native';
@@ -11,6 +12,7 @@ import { useAlert } from '@/template';
 import { getSharedSupabaseClient } from '@/template/core/client';
 
 export default function DriverProfileScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, isTrialActive, trialDaysLeft } = useAuth();
@@ -19,9 +21,9 @@ export default function DriverProfileScreen() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleLogout = async () => {
-    showAlert('Deconectare', 'Ești sigur?', [
-      { text: 'Anulează', style: 'cancel' },
-      { text: 'Deconectează-mă', onPress: async () => {
+    showAlert('Deconectare', '{t('profile_logout_message')}', [
+      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
+      { text: '{t('profile_logout_confirm')}', onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
       }},
@@ -36,14 +38,14 @@ export default function DriverProfileScreen() {
   if (!user) return null;
 
   const statusTone = user.driverStatus === 'approved' ? (isTrialActive ? 'success' : 'danger') : 'warning';
-  const statusLabel = user.driverStatus === 'approved' ? (isTrialActive ? 'Activ' : 'Expirat') : 'În Așteptare';
+  const statusLabel = user.driverStatus === 'approved' ? (isTrialActive ? 'Activ' : 'Expirat') : '{t('profile_status_pending')}';
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <Avatar name={user.name} color={user.avatarColor} size={80} />
         <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.phone}>{user.phone || 'Fără număr'}</Text>
+        <Text style={styles.phone}>{user.phone || '{t('profile_no_phone')}'}</Text>
         
         <View style={styles.badgesRow}>
           <View style={styles.ratingBadge}>
@@ -55,13 +57,13 @@ export default function DriverProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Setări Șofer</Text>
+        <Text style={styles.sectionTitle}>{t('profile_section_driver_settings')}</Text>
         <Card style={styles.card}>
           <Pressable style={styles.row} onPress={() => router.push('/(driver)/subscription')}>
             <View style={styles.rowIcon}><MaterialIcons name="payment" size={24} color={colors.primary} /></View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowText}>Abonament AERO</Text>
-              {isTrialActive && <Text style={{ fontSize: 12, color: colors.success }}>Trial activ ({trialDaysLeft} zile)</Text>}
+              <Text style={styles.rowText}>{t('profile_subscription_title')}</Text>
+              {isTrialActive && <Text style={{ fontSize: 12, color: colors.success }}>{t('profile_trial_active', { days: trialDaysLeft })}</Text>}
             </View>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
@@ -69,7 +71,7 @@ export default function DriverProfileScreen() {
           <View style={styles.row}>
             <View style={styles.rowIcon}><FontAwesome5 name="car" size={20} color={colors.text} /></View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowText}>Mașina Mea</Text>
+              <Text style={styles.rowText}>{t('profile_my_car')}</Text>
               <Text style={{ fontSize: 12, color: colors.textSubtle }}>{user.vehicle?.brand || 'Adaugă mașina'}</Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
@@ -78,34 +80,34 @@ export default function DriverProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Preferințe Aplicație</Text>
+        <Text style={styles.sectionTitle}>{t('profile_section_prefs')}</Text>
         <Card style={styles.card}>
           <View style={styles.row}>
             <View style={styles.rowIcon}><MaterialIcons name="dark-mode" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Dark Mode</Text>
+            <Text style={styles.rowText}>{t('profile_dark_mode')}</Text>
             <Switch value={isDarkMode} onValueChange={toggleDarkMode} trackColor={{ true: colors.primary }} />
           </View>
           <View style={styles.divider} />
           <Pressable style={styles.row} onPress={() => router.push('/(auth)/language')}>
             <View style={styles.rowIcon}><MaterialIcons name="language" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Limbă / Language</Text>
+            <Text style={styles.rowText}>{t('profile_language')}</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
         </Card>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contul Meu</Text>
+        <Text style={styles.sectionTitle}>{t('profile_section_account')}</Text>
         <Card style={styles.card}>
           <Pressable style={styles.row} onPress={() => showAlert('Suport', 'Contactează support-driver@aero-app.com')}>
             <View style={styles.rowIcon}><MaterialIcons name="support-agent" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Suport & Ajutor</Text>
+            <Text style={styles.rowText}>{t('profile_support_help')}</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
           <View style={styles.divider} />
           <Pressable style={styles.row} onPress={handleLogout}>
             <View style={styles.rowIcon}><MaterialIcons name="logout" size={24} color={colors.danger} /></View>
-            <Text style={[styles.rowText, { color: colors.danger }]}>Deconectare</Text>
+            <Text style={[styles.rowText, { color: colors.danger }]}>{t('profile_logout_title')}</Text>
           </Pressable>
         </Card>
       </View>

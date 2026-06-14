@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Chat Cursă
 import { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
@@ -18,6 +19,7 @@ interface Message {
 }
 
 export default function ChatScreen() {
+  const { t } = useI18n();
   const { rideId } = useLocalSearchParams<{ rideId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -93,7 +95,7 @@ export default function ChatScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={styles.headerTitle}>Chat Cursă</Text>
+        <Text style={styles.headerTitle}>{t('chat_title')}</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -121,7 +123,7 @@ export default function ChatScreen() {
       <View style={styles.inputArea}>
         <TextInput 
           style={styles.input} 
-          placeholder="Scrie un mesaj..." 
+          placeholder={t('chat_placeholder')} 
           placeholderTextColor={colors.textFaint}
           value={inputText}
           onChangeText={setInputText}

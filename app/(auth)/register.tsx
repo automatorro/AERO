@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Register Screen (Pasager & Șofer)
 import { useState } from 'react';
 import {
@@ -20,6 +21,7 @@ import { getSharedSupabaseClient } from '@/template/core/client';
 type Role = 'passenger' | 'driver';
 
 export default function RegisterScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ role?: string }>();
@@ -39,15 +41,15 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password.trim() || !phone.trim()) {
-      setError('Completează toate câmpurile obligatorii.');
+      setError(t('register_error_empty_fields'));
       return;
     }
     if (password.length < 6) {
-      setError('Parola trebuie să aibă minim 6 caractere.');
+      setError(t('register_error_password_length'));
       return;
     }
     if (role === 'driver' && (!carMake.trim() || !carModel.trim() || !carPlate.trim())) {
-      setError('Completează datele vehiculului.');
+      setError(t('register_error_vehicle_data'));
       return;
     }
 
@@ -92,7 +94,7 @@ export default function RegisterScreen() {
         router.replace('/(passenger)/ride');
       }
     } catch (err: any) {
-      setError(err?.message ?? 'Înregistrare eșuată. Încearcă din nou.');
+      setError(err?.message ?? t('register_error_failed'));
     } finally {
       setLoading(false);
     }
@@ -118,8 +120,8 @@ export default function RegisterScreen() {
             <MaterialIcons name="flight" size={18} color={colors.accent} />
             <Text style={styles.logoText}>AERO</Text>
           </View>
-          <Text style={styles.title}>Creează cont</Text>
-          <Text style={styles.subtitle}>Gratuit. Fără comision.</Text>
+          <Text style={styles.title}>{t('register_btn_submit')}</Text>
+          <Text style={styles.subtitle}>{t('register_subtitle')}</Text>
         </View>
 
         {/* Role toggle */}
@@ -136,25 +138,25 @@ export default function RegisterScreen() {
                 color={role === r ? '#FFFFFF' : colors.textSubtle}
               />
               <Text style={[styles.roleBtnText, role === r && styles.roleBtnTextActive]}>
-                {r === 'passenger' ? 'Pasager' : 'Șofer'}
+                {r === 'passenger' ? t('role_passenger') : t('role_driver')}
               </Text>
             </Pressable>
           ))}
         </View>
 
         <View style={styles.form}>
-          <Field label="Nume complet" placeholder="Ion Popescu" value={name} onChangeText={setName} icon="person" />
-          <Field label="Email" placeholder="adresa@email.com" value={email} onChangeText={setEmail} icon="email" keyboardType="email-address" autoCapitalize="none" />
-          <Field label="Număr de telefon" placeholder="+40 7xx xxx xxx" value={phone} onChangeText={setPhone} icon="phone" keyboardType="phone-pad" />
+          <Field label={t('register_label_name')} placeholder={t('register_placeholder_name')} value={name} onChangeText={setName} icon="person" />
+          <Field label={t('register_label_email')} placeholder={t('register_placeholder_email')} value={email} onChangeText={setEmail} icon="email" keyboardType="email-address" autoCapitalize="none" />
+          <Field label={t('register_label_phone')} placeholder={t('register_placeholder_phone')} value={phone} onChangeText={setPhone} icon="phone" keyboardType="phone-pad" />
 
           {/* Parolă cu toggle vizibilitate */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Parolă</Text>
+            <Text style={styles.label}>{t('register_label_password')}</Text>
             <View style={styles.inputWrap}>
               <MaterialIcons name="lock" size={18} color={colors.textFaint} style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, { paddingRight: 48 }]}
-                placeholder="Minim 6 caractere"
+                placeholder={t('register_placeholder_password')}
                 placeholderTextColor={colors.textFaint}
                 value={password}
                 onChangeText={setPassword}
@@ -171,17 +173,17 @@ export default function RegisterScreen() {
             <View style={styles.driverSection}>
               <View style={styles.sectionDivider}>
                 <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>Detalii vehicul</Text>
+                <Text style={styles.dividerText}>{t('register_section_vehicle')}</Text>
                 <View style={styles.dividerLine} />
               </View>
-              <Field label="Marcă" placeholder="ex: Toyota" value={carMake} onChangeText={setCarMake} icon="directions-car" />
-              <Field label="Model" placeholder="ex: Camry" value={carModel} onChangeText={setCarModel} icon="directions-car" />
-              <Field label="Număr înmatriculare" placeholder="ex: B 123 ABC" value={carPlate} onChangeText={setCarPlate} icon="confirmation-number" autoCapitalize="characters" />
+              <Field label={t('register_label_car_make')} placeholder={t('register_placeholder_car_make')} value={carMake} onChangeText={setCarMake} icon="directions-car" />
+              <Field label={t('register_label_car_model')} placeholder={t('register_placeholder_car_model')} value={carModel} onChangeText={setCarModel} icon="directions-car" />
+              <Field label={t('register_label_car_plate')} placeholder={t('register_placeholder_car_plate')} value={carPlate} onChangeText={setCarPlate} icon="confirmation-number" autoCapitalize="characters" />
 
               <View style={styles.noteBox}>
                 <MaterialIcons name="info-outline" size={16} color={colors.accent} />
                 <Text style={styles.noteText}>
-                  Vei putea adăuga poza vehiculului și documentele la pasul următor. Contul va fi activat după verificarea manuală a documentelor.
+                  {t('register_driver_note')}
                 </Text>
               </View>
             </View>
@@ -205,7 +207,7 @@ export default function RegisterScreen() {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <>
-                <Text style={styles.btnPrimaryText}>Creează cont</Text>
+                <Text style={styles.btnPrimaryText}>{t('register_btn_submit')}</Text>
                 <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
               </>
             )}
@@ -214,9 +216,9 @@ export default function RegisterScreen() {
 
         {/* Login link */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Ai deja cont? </Text>
+          <Text style={styles.footerText}>{t('register_have_account_spaced')}</Text>
           <Pressable onPress={() => router.push('/(auth)/login')}>
-            <Text style={[styles.footerText, styles.footerLink]}>Conectează-te</Text>
+            <Text style={[styles.footerText, styles.footerLink]}>{t('register_link_login')}</Text>
           </Pressable>
         </View>
       </ScrollView>

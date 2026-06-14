@@ -36,6 +36,7 @@ const LANGUAGES: { code: Language, name: string, flag: string }[] = [
 ];
 
 export default function LanguageScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { language, setLanguage } = useI18n();
@@ -50,8 +51,8 @@ export default function LanguageScreen() {
     <View style={[styles.container, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }]}>
       <View style={styles.header}>
         <MaterialIcons name="language" size={32} color={colors.primary} />
-        <Text style={styles.title}>Alege limba</Text>
-        <Text style={styles.subtitle}>Select language / Choisissez la langue</Text>
+        <Text style={styles.title}>{t('lang_title')}</Text>
+        <Text style={styles.subtitle}>{t('lang_subtitle')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
@@ -73,7 +74,7 @@ export default function LanguageScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button label="Continuă" fullWidth size="lg" icon="arrow-forward" onPress={handleContinue} />
+        <Button label={t('lang_btn_continue')} fullWidth size="lg" icon="arrow-forward" onPress={handleContinue} />
       </View>
     </View>
   );

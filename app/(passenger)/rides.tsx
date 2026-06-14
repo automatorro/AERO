@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Passenger Rides History
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,18 +9,19 @@ import { useRide } from '@/hooks/useRide';
 import { CURRENCY } from '@/services/mockData';
 
 export default function PassengerRidesScreen() {
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const { history } = useRide();
 
   return (
     <Screen>
-      <Header title="Istoricul curselor" />
+      <Header title={t('rides_history_title')} />
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {history.length === 0 ? (
           <View style={styles.empty}>
             <MaterialIcons name="receipt-long" size={48} color={colors.textFaint} />
-            <Text style={styles.emptyTitle}>Nicio cursă încă</Text>
-            <Text style={styles.emptyText}>Cursele tale vor apărea aici</Text>
+            <Text style={styles.emptyTitle}>{t('rides_empty_title')}</Text>
+            <Text style={styles.emptyText}>{t('rides_empty_subtitle_passenger')}</Text>
           </View>
         ) : (
           history.map((ride) => (

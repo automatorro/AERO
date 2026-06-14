@@ -15,6 +15,7 @@ interface DriverRequestCardProps {
 
 // Drivers act only via predefined buttons. No keyboard input allowed.
 export function DriverRequestCard({ request, onAccept, onIgnore }: DriverRequestCardProps) {
+  const { t } = useI18n();
   const [timeLeft, setTimeLeft] = require('react').useState(30);
 
   require('react').useEffect(() => {
@@ -66,7 +67,7 @@ export function DriverRequestCard({ request, onAccept, onIgnore }: DriverRequest
           onPress={() => onIgnore(request.id)}
           style={({ pressed }) => [styles.ignore, { opacity: pressed ? 0.7 : 1 }]}
         >
-          <Text style={styles.ignoreText}>Ignoră</Text>
+          <Text style={styles.ignoreText}>{t('driver_card_btn_ignore')}</Text>
         </Pressable>
         <Pressable
           onPress={() => onAccept(request, 5)}
@@ -85,7 +86,7 @@ export function DriverRequestCard({ request, onAccept, onIgnore }: DriverRequest
           style={({ pressed }) => [styles.accept, { opacity: pressed ? 0.85 : 1 }]}
         >
           <MaterialIcons name="check" size={18} color="#fff" />
-          <Text style={styles.acceptText}>Acceptă</Text>
+          <Text style={styles.acceptText}>{t('driver_card_btn_accept')}</Text>
         </Pressable>
       </View>
     </View>

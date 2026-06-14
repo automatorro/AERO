@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Driver Drive Screen (Radar)
 // Preia logica din (tabs)/drive.tsx — va fi extins în Etapa 4
 import { useState } from 'react';
@@ -19,6 +20,7 @@ import { openExternalNavigation } from '@/services/navigationLinks';
 import { getSharedSupabaseClient } from '@/template/core/client';
 
 export default function DriveScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, isTrialActive, trialDaysLeft, approveDriverMock, renewSubscriptionMock } = useAuth();
@@ -41,9 +43,9 @@ export default function DriveScreen() {
   };
 
   const handleLogout = async () => {
-    showAlert('Deconectare', 'Ești sigur?', [
-      { text: 'Anulează', style: 'cancel' },
-      { text: 'Deconectează-mă', onPress: async () => {
+    showAlert('{t('profile_logout_title')}', '{t('profile_logout_message')}', [
+      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
+      { text: '{t('profile_logout_confirm')}', onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
       }},
@@ -89,7 +91,7 @@ export default function DriveScreen() {
         <MapSurface pins={pins} showRoute style={StyleSheet.absoluteFillObject} />
         <View style={[styles.activeSheet, { paddingBottom: insets.bottom + spacing.md }]}>
           <Badge 
-            label={rideStep === 'going_to_pickup' ? 'Navighează spre preluare' : rideStep === 'arrived' ? 'Așteptare pasager' : 'Cursă în desfășurare'} 
+            label={rideStep === 'going_to_pickup' ? t('active_status_ontheway') : rideStep === 'arrived' ? t('active_status_waiting') : t('active_status_inprogress')} 
             tone={rideStep === 'arrived' ? 'warning' : 'success'} 
             icon={rideStep === 'arrived' ? 'timer' : 'directions-car'} 
           />
@@ -110,48 +112,48 @@ export default function DriveScreen() {
           
           {rideStep === 'going_to_pickup' && (
             <>
-              <Button label="Navighează (Waze / Maps)" fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.pickup)} />
+              <Button label={t('driver_ride_btn_nav_pickup')} fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.pickup)} />
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Button label="Chat" variant="outline" icon="chat" style={{ flex: 1 }} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: r.id } })} />
-                <Button label="SOS" variant="outline" icon="warning" style={{ flex: 1, borderColor: colors.danger }} textStyle={{ color: colors.danger }} onPress={async () => {
+                <Button label={t('active_chat_btn')} variant="outline" icon="chat" style={{ flex: 1 }} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: r.id } })} />
+                <Button label={t('active_sos_btn')} variant="outline" icon="warning" style={{ flex: 1, borderColor: colors.danger }} textStyle={{ color: colors.danger }} onPress={async () => {
                    try {
                      await require('@/services/rideBackend').triggerSOS(user?.id, 'Passenger');
-                     showAlert('SOS Activ', 'AERO a fost alertat!');
+                     showAlert(t('active_sos_btn'), t('active_sos_alerted'));
                    } catch(e) {}
                 }} />
               </View>
-              <Button label="Am ajuns la Preluare" fullWidth icon="place" onPress={() => { setRideStep('arrived'); setArrivedTime(Date.now()); }} />
+              <Button label={t('driver_ride_btn_arrived')} fullWidth icon="place" onPress={() => { setRideStep('arrived'); setArrivedTime(Date.now()); }} />
             </>
           )}
 
           {rideStep === 'arrived' && (
             <>
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Button label="Apelează" variant="outline" icon="call" style={{ flex: 1 }} onPress={() => showAlert('Apel', 'Apelare 0722000000...')} />
-                <Button label="Chat" variant="outline" icon="chat" style={{ flex: 1 }} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: r.id } })} />
+                <Button label={t('active_call_btn')} variant="outline" icon="call" style={{ flex: 1 }} onPress={() => showAlert(t('active_call_btn'), t('active_call_dialing'))} />
+                <Button label={t('active_chat_btn')} variant="outline" icon="chat" style={{ flex: 1 }} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: r.id } })} />
               </View>
-              <Button label="Începe Cursa" fullWidth icon="play-arrow" onPress={() => setRideStep('inprogress')} />
+              <Button label={t('driver_ride_btn_start')} fullWidth icon="play-arrow" onPress={() => setRideStep('inprogress')} />
             </>
           )}
 
           {rideStep === 'inprogress' && (
             <>
-              <Button label="Navighează spre Destinație" fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.dropoff)} />
+              <Button label={t('driver_ride_btn_nav_dropoff')} fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.dropoff)} />
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Button label="SOS" variant="outline" icon="warning" style={{ flex: 1, borderColor: colors.danger }} textStyle={{ color: colors.danger }} onPress={async () => {
+                <Button label={t('active_sos_btn')} variant="outline" icon="warning" style={{ flex: 1, borderColor: colors.danger }} textStyle={{ color: colors.danger }} onPress={async () => {
                    try {
                      await require('@/services/rideBackend').triggerSOS(user?.id, 'Passenger');
-                     showAlert('SOS Activ', 'AERO a fost alertat!');
+                     showAlert(t('active_sos_btn'), t('active_sos_alerted'));
                    } catch(e) {}
                 }} />
               </View>
               <Button
-                label="Finalizează cursa"
+                label={t('driver_ride_btn_complete')}
                 variant="dark" fullWidth icon="flag"
                 onPress={() => {
                   completeDriverRide();
                   setRideStep('going_to_pickup'); // Reset local state
-                  showAlert('Cursă finalizată', `Ai încasat ${r.finalPrice} ${CURRENCY}. Bani adăugați în contul tău Stripe.`);
+                  showAlert(t('driver_ride_complete_alert_title'), t('driver_ride_complete_alert_msg', { price: r.finalPrice, currency: CURRENCY }));
                 }}
               />
             </>
@@ -165,19 +167,19 @@ export default function DriveScreen() {
   if (status === 'none') {
     return (
       <ScrollView style={styles.plain} contentContainerStyle={[styles.plainContent, { paddingTop: insets.top + spacing.md }]}>
-        <Text style={styles.bigTitle}>Devino Șofer AERO</Text>
+        <Text style={styles.bigTitle}>{t('driver_onboarding_title')}</Text>
         <Text style={styles.lead}>
-          Primești comenzi de la pasageri pe bază de abonament.{'\n'}Comisionul AERO este 0% — banii merg direct la tine.
+          Primești comenzi de la pasageri pe bază de abonament.{'\n'}{t('driver_onboarding_lead')}
         </Text>
         <View style={styles.benefits}>
-          <Benefit icon="payments" text="Plăți directe în contul tău (Stripe Connect)" />
-          <Benefit icon="event-available" text="1 lună gratuită la aprobare" />
-          <Benefit icon="tune" text="Tu controlezi prețul prin contraoferte" />
-          <Benefit icon="visibility" text="Destinația vizibilă înainte de acceptare" />
+          <Benefit icon="payments" text={t('driver_benefit_payments')} />
+          <Benefit icon="event-available" text={t('driver_benefit_trial')} />
+          <Benefit icon="tune" text={t('driver_benefit_negotiation')} />
+          <Benefit icon="visibility" text={t('driver_benefit_destination')} />
         </View>
-        <Button label="Începe înregistrarea" fullWidth size="lg" icon="arrow-forward" onPress={() => router.push('/driver/onboarding')} />
+        <Button label={t('driver_onboarding_btn')} fullWidth size="lg" icon="arrow-forward" onPress={() => router.push('/driver/onboarding')} />
         <Pressable onPress={handleLogout} style={{ marginTop: spacing.lg, alignSelf: 'center' }}>
-          <Text style={{ color: colors.textSubtle, fontSize: fontSize.sm }}>Deconectare</Text>
+          <Text style={{ color: colors.textSubtle, fontSize: fontSize.sm }}>{t('profile_logout_title')}</Text>
         </Pressable>
       </ScrollView>
     );
@@ -190,13 +192,13 @@ export default function DriveScreen() {
         <View style={styles.pendingIcon}>
           <MaterialIcons name="hourglass-top" size={36} color={colors.warning} />
         </View>
-        <Text style={styles.bigTitle}>Documente în verificare</Text>
-        <Text style={styles.lead}>Echipa AERO îți verifică actele. Vei putea prelua curse imediat după aprobare.</Text>
+        <Text style={styles.bigTitle}>{t('driver_pending_title')}</Text>
+        <Text style={styles.lead}>{t('driver_pending_text')}</Text>
         <Card style={{ alignSelf: 'stretch', marginTop: spacing.md }}>
           <Text style={styles.demoLabel}>Demo admin</Text>
           <Text style={styles.demoText}>Simulează aprobarea (în producție se face din panoul web de admin):</Text>
           <View style={{ height: spacing.sm }} />
-          <Button label="Simulează aprobarea" variant="outline" fullWidth icon="verified" onPress={approveDriverMock} />
+          <Button label={t('driver_pending_btn_simulate')} variant="outline" fullWidth icon="verified" onPress={approveDriverMock} />
         </Card>
       </View>
     );
@@ -209,13 +211,13 @@ export default function DriveScreen() {
         <View style={styles.expiredIcon}>
           <MaterialIcons name="lock-clock" size={36} color={colors.danger} />
         </View>
-        <Text style={styles.bigTitle}>Abonament expirat</Text>
-        <Text style={styles.lead}>Reînnoiește abonamentul pentru a relua cursele.</Text>
+        <Text style={styles.bigTitle}>{t('driver_expired_title')}</Text>
+        <Text style={styles.lead}>{t('driver_expired_text')}</Text>
         <Card style={{ alignSelf: 'stretch', marginTop: spacing.md }}>
-          <Button label="Alege Abonament (50 RON/lună)" fullWidth icon="credit-card" onPress={() => router.push('/(driver)/subscription')} />
+          <Button label={t('driver_expired_btn_choose')} fullWidth icon="credit-card" onPress={() => router.push('/(driver)/subscription')} />
           <View style={{ height: spacing.sm }} />
           <Text style={styles.demoLabel}>Demo Dev</Text>
-          <Button label="Activează Mock" variant="ghost" fullWidth onPress={renewSubscriptionMock} />
+          <Button label={t('driver_expired_btn_mock')} variant="ghost" fullWidth onPress={renewSubscriptionMock} />
         </Card>
       </View>
     );
@@ -233,7 +235,7 @@ export default function DriveScreen() {
       <View style={[styles.radarTop, { paddingTop: insets.top + spacing.sm }]}>
         <View style={styles.statusCard}>
           <View style={[styles.onlineDot, { backgroundColor: isOnline ? colors.success : colors.textFaint }]} />
-          <Text style={styles.statusCardText}>{isOnline ? 'Online · primești comenzi' : 'Offline'}</Text>
+          <Text style={styles.statusCardText}>{isOnline ? t('driver_radar_online') : t('driver_radar_offline')}</Text>
           <Badge label={`Trial: ${trialDaysLeft}z`} tone="primary" icon="schedule" />
         </View>
       </View>
@@ -241,19 +243,19 @@ export default function DriveScreen() {
         {!isOnline ? (
           <Pressable style={styles.goOnline} onPress={requestOnline}>
             <MaterialIcons name="power-settings-new" size={26} color="#fff" />
-            <Text style={styles.goOnlineText}>Intră Online</Text>
+            <Text style={styles.goOnlineText}>{t('driver_radar_btn_online')}</Text>
           </Pressable>
         ) : (
           <>
             <View style={styles.reqHeader}>
-              <Text style={styles.reqTitle}>Cereri în apropiere</Text>
+              <Text style={styles.reqTitle}>{t('driver_radar_requests_title')}</Text>
               <Pressable onPress={goOffline} hitSlop={8}>
-                <Text style={styles.offlineLink}>Ieși Offline</Text>
+                <Text style={styles.offlineLink}>{t('driver_radar_btn_offline')}</Text>
               </Pressable>
             </View>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.sm }}>
               {nearbyRequests.length === 0 ? (
-                <Text style={styles.noReq}>Nu sunt cereri momentan. Stai online.</Text>
+                <Text style={styles.noReq}>{t('driver_radar_no_requests')}</Text>
               ) : (
                 nearbyRequests.map((req) => (
                   <DriverRequestCard key={req.id} request={req} onAccept={acceptRequest} onIgnore={ignoreRequest} />

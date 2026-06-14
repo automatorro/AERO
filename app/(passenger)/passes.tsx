@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Passenger Saved Locations (Passes tab)
 import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -5,14 +6,15 @@ import { colors, fontSize, fontWeight, radius, spacing } from '@/constants/theme
 import { Screen, Header } from '@/components';
 
 const SAVED = [
-  { id: '1', label: 'Acasă', icon: 'home' as const, address: 'Str. Lipscani 12, București' },
-  { id: '2', label: 'Serviciu', icon: 'work' as const, address: 'Bd. Magheru 28, București' },
+  { id: '1', label: t('passes_home'), icon: 'home' as const, address: 'Str. Lipscani 12, București' },
+  { id: '2', label: t('passes_work'), icon: 'work' as const, address: 'Bd. Magheru 28, București' },
 ];
 
 export default function PassengerPassesScreen() {
+  const { t } = useI18n();
   return (
     <Screen>
-      <Header title="Locații favorite" />
+      <Header title={t('passes_title')} />
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {SAVED.map((loc) => (
           <View key={loc.id} style={styles.card}>
@@ -30,7 +32,7 @@ export default function PassengerPassesScreen() {
         ))}
         <Pressable style={styles.addBtn}>
           <MaterialIcons name="add" size={20} color={colors.primary} />
-          <Text style={styles.addText}>Adaugă locație</Text>
+          <Text style={styles.addText}>{t('passes_add_btn')}</Text>
         </Pressable>
       </ScrollView>
     </Screen>

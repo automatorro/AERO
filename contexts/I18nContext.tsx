@@ -26,8 +26,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.setItem('user_language', lang);
   };
 
-  const t = (key: TranslationKey): string => {
-    return translations[language][key] || translations['ro'][key] || key;
+  const t = (key: TranslationKey, params?: Record<string, string | number>): string => {
+    let str = translations[language][key] || translations['ro'][key] || key;
+    if (params) {
+      Object.keys(params).forEach(paramKey => {
+        str = str.split(`{${paramKey}}`).join(String(params[paramKey]));
+      });
+    }
+    return str;
   };
 
   return (

@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Driver Rides History
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -7,6 +8,7 @@ import { useRide } from '@/hooks/useRide';
 import { CURRENCY } from '@/services/mockData';
 
 export default function DriverRidesScreen() {
+  const { t } = useI18n();
   const { history } = useRide();
 
   const totalEarnings = history.reduce((sum, r) => sum + (r.finalPrice ?? 0), 0);
@@ -20,25 +22,25 @@ export default function DriverRidesScreen() {
         <View style={styles.summary}>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{history.length}</Text>
-            <Text style={styles.summaryLabel}>Curse totale</Text>
+            <Text style={styles.summaryLabel}>{t('rides_total_rides')}</Text>
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{totalEarnings} {CURRENCY}</Text>
-            <Text style={styles.summaryLabel}>Câștiguri totale</Text>
+            <Text style={styles.summaryLabel}>{t('rides_total_earnings')}</Text>
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>★ {avgRating}</Text>
-            <Text style={styles.summaryLabel}>Rating mediu</Text>
+            <Text style={styles.summaryLabel}>{t('rides_average_rating')}</Text>
           </View>
         </View>
 
         {history.length === 0 ? (
           <View style={styles.empty}>
             <MaterialIcons name="receipt-long" size={48} color={colors.textFaint} />
-            <Text style={styles.emptyTitle}>Nicio cursă încă</Text>
-            <Text style={styles.emptyText}>Cursele tale vor apărea după finalizare</Text>
+            <Text style={styles.emptyTitle}>{t('rides_empty_title')}</Text>
+            <Text style={styles.emptyText}>{t('rides_empty_subtitle')}</Text>
           </View>
         ) : (
           history.map((ride) => (

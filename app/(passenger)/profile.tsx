@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Passenger Profile
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, Pressable } from 'react-native';
@@ -11,6 +12,7 @@ import { useAlert } from '@/template';
 import { getSharedSupabaseClient } from '@/template/core/client';
 
 export default function PassengerProfileScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -19,9 +21,9 @@ export default function PassengerProfileScreen() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleLogout = async () => {
-    showAlert('Deconectare', 'Ești sigur?', [
-      { text: 'Anulează', style: 'cancel' },
-      { text: 'Deconectează-mă', onPress: async () => {
+    showAlert('Deconectare', '{t('profile_logout_message')}', [
+      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
+      { text: '{t('profile_logout_confirm')}', onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
       }},
@@ -30,7 +32,7 @@ export default function PassengerProfileScreen() {
 
   const handleDeleteAccount = () => {
     showAlert('Ștergere cont', 'Această acțiune este ireversibilă. Continuăm?', [
-      { text: 'Anulează', style: 'cancel' },
+      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
       { text: 'Șterge', style: 'destructive', onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
@@ -50,7 +52,7 @@ export default function PassengerProfileScreen() {
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <Avatar name={user.name} color={user.avatarColor} size={80} />
         <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.phone}>{user.phone || 'Fără număr'}</Text>
+        <Text style={styles.phone}>{user.phone || '{t('profile_no_phone')}'}</Text>
         <View style={styles.ratingBadge}>
           <MaterialIcons name="star" size={16} color="#F59E0B" />
           <Text style={styles.ratingText}>{user.rating.toFixed(1)} Rating Pasager</Text>
@@ -58,63 +60,63 @@ export default function PassengerProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Setări Aplicație</Text>
+        <Text style={styles.sectionTitle}>{t('profile_section_app_settings')}</Text>
         <Card style={styles.card}>
           <View style={styles.row}>
             <View style={styles.rowIcon}><MaterialIcons name="dark-mode" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Dark Mode</Text>
+            <Text style={styles.rowText}>{t('profile_dark_mode')}</Text>
             <Switch value={isDarkMode} onValueChange={toggleDarkMode} trackColor={{ true: colors.primary }} />
           </View>
           <View style={styles.divider} />
           <Pressable style={styles.row} onPress={() => router.push('/(passenger)/rides')}>
             <View style={styles.rowIcon}><MaterialIcons name="receipt-long" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Istoric curse</Text>
+            <Text style={styles.rowText}>{t('profile_history_rides')}</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
           <View style={styles.divider} />
           <Pressable style={styles.row} onPress={() => router.push('/(passenger)/passes')}>
             <View style={styles.rowIcon}><MaterialIcons name="favorite" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Adrese salvate</Text>
+            <Text style={styles.rowText}>{t('profile_saved_addresses')}</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
           <View style={styles.divider} />
           <Pressable style={styles.row} onPress={() => router.push('/(auth)/language')}>
             <View style={styles.rowIcon}><MaterialIcons name="language" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Limbă / Language</Text>
+            <Text style={styles.rowText}>{t('profile_language')}</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
         </Card>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contul Meu</Text>
+        <Text style={styles.sectionTitle}>{t('profile_section_account')}</Text>
         <Card style={styles.card}>
-          <Pressable style={styles.row} onPress={() => showAlert('Suport', 'Contactează support@aero-app.com')}>
+          <Pressable style={styles.row} onPress={() => showAlert(t('profile_support_title'), t('profile_support_message'))}>
             <View style={styles.rowIcon}><MaterialIcons name="support-agent" size={24} color={colors.text} /></View>
-            <Text style={styles.rowText}>Suport & Ajutor</Text>
+            <Text style={styles.rowText}>{t('profile_support_help')}</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
           <View style={styles.divider} />
           <Pressable style={styles.row} onPress={handleLogout}>
             <View style={styles.rowIcon}><MaterialIcons name="logout" size={24} color={colors.danger} /></View>
-            <Text style={[styles.rowText, { color: colors.danger }]}>Deconectare</Text>
+            <Text style={[styles.rowText, { color: colors.danger }]}>{t('profile_logout_title')}</Text>
           </Pressable>
         </Card>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Admin</Text>
+        <Text style={styles.sectionTitle}>{t('profile_section_admin')}</Text>
         <Card style={styles.card}>
           <Pressable style={styles.row} onPress={() => router.push('/(admin)/dashboard')}>
             <View style={styles.rowIcon}><MaterialIcons name="admin-panel-settings" size={24} color="#F97316" /></View>
-            <Text style={styles.rowText}>Admin Panel</Text>
+            <Text style={styles.rowText}>{t('profile_admin_panel')}</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
         </Card>
       </View>
 
       <Button 
-        label="Șterge Contul" 
+        label={t('profile_btn_delete_account')} 
         variant="ghost" 
         textStyle={{ color: colors.danger }} 
         style={{ marginTop: spacing.xl }}

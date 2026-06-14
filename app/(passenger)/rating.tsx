@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Rating Cursă (Pasager)
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
@@ -9,6 +10,7 @@ import { colors, fontSize, fontWeight, radius, spacing } from '@/constants/theme
 import { useRide } from '@/hooks/useRide';
 
 export default function RatingScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { activeRide, completeRide } = useRide();
@@ -27,8 +29,8 @@ export default function RatingScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }]}>
-      <Text style={styles.title}>Ai ajuns la destinație!</Text>
-      <Text style={styles.sub}>Cum a fost cursa cu {activeRide.offer.driverName}?</Text>
+      <Text style={styles.title}>{t('rating_headline')}</Text>
+      <Text style={styles.sub}>{t('rating_subtext', { driverName: activeRide.offer.driverName })}</Text>
 
       <View style={styles.avatarWrap}>
         <View style={[styles.avatar, { backgroundColor: activeRide.offer.avatarColor }]}>
@@ -50,7 +52,7 @@ export default function RatingScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="Adaugă un comentariu (opțional)..."
+        placeholder={t('rating_comment_placeholder')}
         placeholderTextColor={colors.textFaint}
         multiline
         value={comment}
@@ -59,9 +61,9 @@ export default function RatingScreen() {
 
       <View style={{ flex: 1 }} />
 
-      <Button label="Trimite Evaluarea" fullWidth size="lg" onPress={handleSubmit} />
+      <Button label={t('rating_submit_btn')} fullWidth size="lg" onPress={handleSubmit} />
       <Pressable style={styles.skipBtn} onPress={handleSubmit}>
-        <Text style={styles.skipText}>Omite pentru moment</Text>
+        <Text style={styles.skipText}>{t('rating_skip_btn')}</Text>
       </Pressable>
     </View>
   );

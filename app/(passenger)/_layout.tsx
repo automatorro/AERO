@@ -1,3 +1,4 @@
+import { useI18n } from '@/contexts/I18nContext';
 // AERO — Tab navigator Pasager
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
@@ -6,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontWeight } from '@/constants/theme';
 
 export default function PassengerLayout() {
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
 
   return (
@@ -29,28 +31,28 @@ export default function PassengerLayout() {
       <Tabs.Screen
         name="ride"
         options={{
-          title: 'Cursă',
+          title: t('tab_passenger_ride'),
           tabBarIcon: ({ color, size }) => <MaterialIcons name="explore" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="rides"
         options={{
-          title: 'Istoricul meu',
+          title: t('tab_passenger_history'),
           tabBarIcon: ({ color, size }) => <MaterialIcons name="receipt-long" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="passes"
         options={{
-          title: 'Locații',
+          title: t('tab_passenger_passes'),
           tabBarIcon: ({ color, size }) => <MaterialIcons name="bookmark" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profil',
+          title: t('tab_passenger_profile'),
           tabBarIcon: ({ color, size }) => <MaterialIcons name="person" size={size} color={color} />,
         }}
       />
