@@ -9,12 +9,16 @@ import { RideProvider } from '@/contexts/RideContext';
 import { I18nProvider } from '@/contexts/I18nContext';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 
 // Guard component — redirecționează în funcție de starea de autentificare
 function AuthGuard() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  // Inițializare push notifications
+  useNotifications();
 
   useEffect(() => {
     if (loading) return;

@@ -12,6 +12,7 @@ import {
   saveRide,
   updateRideStatus,
 } from '@/services/rideBackend';
+import { AeroNotifications } from '@/services/notifications';
 
 interface RideContextValue {
   // passenger flow
@@ -125,8 +126,13 @@ export function RideProvider({ children }: { children: ReactNode }) {
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      setOffers(generateOffers(offeredPrice));
+      const newOffers = generateOffers(offeredPrice);
+      setOffers(newOffers);
       setStatus('offers');
+      // Notificare: s-au primit oferte
+      if (newOffers.length > 0) {
+        AeroNotifications.counterOffer(newOffers[0].driverName, String(newOffers[0].price));
+      }
     }, 2200);
 
     void savePassengerRideRequest({
@@ -160,6 +166,8 @@ export function RideProvider({ children }: { children: ReactNode }) {
       };
       setActiveRide(ride);
       setStatus('accepted');
+      // Notificare: cursa a fost acceptata
+      AeroNotifications.rideAccepted(offer.driverName, offer.etaMin);
 
       void saveRide({
         ownerId: user?.id,
@@ -199,6 +207,8 @@ export function RideProvider({ children }: { children: ReactNode }) {
       }
       return prev;
     });
+    // Notificare: cursa finalizata
+    AeroNotifications.rideCompleted(String(activeRide?.finalPrice ?? ''));
     resetPassenger();
   }, [resetPassenger, user?.id]);
 
@@ -260,6 +270,8 @@ export function RideProvider({ children }: { children: ReactNode }) {
       ownerId: user?.id,
       ride,
     });
+    // Notificare: cerere noua de cursa acceptata de sofer
+    AeroNotifications.newRideRequest(req.pickup.name, String(req.offeredPrice));
   }, [user?.id]);
 
   const ignoreRequest = useCallback((id: string) => {

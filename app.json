@@ -34,7 +34,15 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#F97316",
+          "defaultChannel": "aero-default"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
