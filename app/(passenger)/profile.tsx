@@ -102,6 +102,17 @@ export default function PassengerProfileScreen() {
         </Card>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Admin</Text>
+        <Card style={styles.card}>
+          <Pressable style={styles.row} onPress={() => router.push('/(admin)/dashboard')}>
+            <View style={styles.rowIcon}><MaterialIcons name="admin-panel-settings" size={24} color="#F97316" /></View>
+            <Text style={styles.rowText}>Admin Panel</Text>
+            <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
+          </Pressable>
+        </Card>
+      </View>
+
       <Button 
         label="Șterge Contul" 
         variant="ghost" 

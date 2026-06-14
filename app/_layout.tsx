@@ -70,6 +70,12 @@ export default function RootLayout() {
                 {/* Driver group */}
                 <Stack.Screen name="(driver)" />
 
+                {/* Admin group */}
+                <Stack.Screen name="(admin)" />
+
+                {/* Chat */}
+                <Stack.Screen name="chat/[rideId]" options={{ headerShown: false }} />
+
                 {/* Shared stack screens */}
                 <Stack.Screen name="ride/request" options={{ headerShown: true, title: 'Comandă cursă' }} />
                 <Stack.Screen name="ride/offers" options={{ headerShown: true, title: 'Oferte șoferi' }} />
