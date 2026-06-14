@@ -17,13 +17,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRide } from '@/hooks/useRide';
 import { CURRENCY } from '@/services/mockData';
 import { openExternalNavigation } from '@/services/navigationLinks';
-import { getSharedSupabaseClient } from '@/template/core/client';
 
 export default function DriveScreen() {
   const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, isTrialActive, trialDaysLeft, approveDriverMock, renewSubscriptionMock } = useAuth();
+  const { user, isTrialActive, trialDaysLeft, approveDriverMock, renewSubscriptionMock, signOut } = useAuth();
   const { isOnline, nearbyRequests, driverActiveRide, goOnline, goOffline, acceptRequest, ignoreRequest, completeDriverRide } = useRide();
   const { showAlert } = useAlert();
   const [showDisclosure, setShowDisclosure] = useState(false);
@@ -46,8 +45,7 @@ export default function DriveScreen() {
     showAlert(t('profile_logout_title'), t('profile_logout_message'), [
       { text: t('profile_logout_cancel'), style: 'cancel' },
       { text: t('profile_logout_confirm'), onPress: async () => {
-        try { await getSharedSupabaseClient().auth.signOut(); } catch {}
-        router.replace('/(auth)');
+        await signOut();
       }},
     ]);
   };

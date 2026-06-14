@@ -19,6 +19,7 @@ export interface AppUser {
   driverStatus: DriverStatus;
   trialEndsAt: string | null; // ISO date
   vehicle?: Vehicle;
+  isDemo?: boolean;
 }
 
 export interface Place {

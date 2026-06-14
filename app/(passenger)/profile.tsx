@@ -15,7 +15,7 @@ export default function PassengerProfileScreen() {
   const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
   const { showAlert } = useAlert();
   
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -24,8 +24,7 @@ export default function PassengerProfileScreen() {
     showAlert(t('profile_logout_title'), t('profile_logout_message'), [
       { text: t('profile_logout_cancel'), style: 'cancel' },
       { text: t('profile_logout_confirm'), onPress: async () => {
-        try { await getSharedSupabaseClient().auth.signOut(); } catch {}
-        router.replace('/(auth)');
+        await signOut();
       }},
     ]);
   };
@@ -34,8 +33,7 @@ export default function PassengerProfileScreen() {
     showAlert('Ștergere cont', 'Această acțiune este ireversibilă. Continuăm?', [
       { text: t('profile_logout_cancel'), style: 'cancel' },
       { text: 'Șterge', style: 'destructive', onPress: async () => {
-        try { await getSharedSupabaseClient().auth.signOut(); } catch {}
-        router.replace('/(auth)');
+        await deleteAccount();
       }},
     ]);
   };

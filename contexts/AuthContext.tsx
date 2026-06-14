@@ -22,6 +22,8 @@ interface AuthContextValue {
   reportUser: (targetName: string, reason: string) => void;
   blockUser: (targetName: string) => void;
   deleteAccount: () => void;
+  signOut: () => Promise<void>;
+  loginAsDemo: (role: UserRole) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -89,7 +91,7 @@ function toSupabaseMetadata(user: AppUser) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AppUser | null>(createDefaultUser());
+  const [user, setUser] = useState<AppUser | null>(null);
   const [safetyActions, setSafetyActions] = useState<SafetyAction[]>([]);
   const [loading, setLoading] = useState(true);
   const userRef = useRef<AppUser | null>(user);
@@ -114,6 +116,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const signOut = useCallback(async () => {
+    userRef.current = null;
+    setUser(null);
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    try {
+      const client = getSharedSupabaseClient();
+      await client.auth.signOut();
+    } catch (e) {
+      console.warn("[AuthContext] Supabase sign out error:", e);
+    }
+  }, []);
+
+  const loginAsDemo = useCallback(async (role: UserRole = 'passenger') => {
+    const demoUser = createDefaultUser();
+    demoUser.role = role;
+    demoUser.isDemo = true;
+    if (role === 'driver') {
+      demoUser.driverStatus = 'approved';
+      demoUser.trialEndsAt = addMonths(new Date(), DEFAULT_TRIAL_MONTHS).toISOString();
+    }
+    demoUser.name = role === 'passenger' ? 'Ion Pasagerul (Demo)' : 'Gheorghe Șoferul (Demo)';
+    demoUser.id = `demo_${role}_${Date.now()}`;
+    await persistUser(demoUser);
+  }, [persistUser]);
+
   useEffect(() => {
     let mounted = true;
     let subscription: { unsubscribe: () => void } | null = null;
@@ -127,11 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (!mounted) return;
 
-        const storedUser = safeParse<AppUser>(rawUser, createDefaultUser());
+        const storedUser = rawUser ? safeParse<AppUser>(rawUser, null) : null;
         const storedSafety = safeParse<SafetyAction[]>(rawSafety, []);
 
-        setUser(storedUser);
-        userRef.current = storedUser;
         setSafetyActions(storedSafety);
 
         const client = getSharedSupabaseClient();
@@ -140,20 +165,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
 
         if (session?.user) {
-          const hydrated = mapSupabaseUserToAppUser(session.user, storedUser);
+          const hydrated = mapSupabaseUserToAppUser(session.user, storedUser ?? createDefaultUser());
           userRef.current = hydrated;
           setUser(hydrated);
           await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(hydrated));
+        } else {
+          // If there is no active supabase session, check if the stored user is in demo mode
+          if (storedUser && storedUser.isDemo) {
+            userRef.current = storedUser;
+            setUser(storedUser);
+          } else {
+            // Otherwise start as guest/logged out
+            userRef.current = null;
+            setUser(null);
+            await AsyncStorage.removeItem(STORAGE_KEY);
+          }
         }
 
-        const { data: { subscription: authSubscription } } = client.auth.onAuthStateChange(async (_event, nextSession) => {
+        const { data: { subscription: authSubscription } } = client.auth.onAuthStateChange(async (event, nextSession) => {
           if (!mounted) return;
 
-          if (!nextSession?.user) {
-            const fallbackUser = userRef.current ?? storedUser ?? createDefaultUser();
-            userRef.current = fallbackUser;
-            setUser(fallbackUser);
-            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackUser));
+          console.log("[AuthContext] Auth state change event:", event);
+
+          if (event === 'SIGNED_OUT' || !nextSession?.user) {
+            // If in demo mode, ignore Supabase session sign out triggers
+            if (userRef.current?.isDemo) {
+              return;
+            }
+            userRef.current = null;
+            setUser(null);
+            await AsyncStorage.removeItem(STORAGE_KEY);
             return;
           }
 
@@ -168,9 +209,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         subscription = authSubscription;
-      } catch {
+      } catch (err) {
+        console.error("[AuthContext] Initialization error:", err);
         if (!mounted) return;
-        setUser((current) => current ?? createDefaultUser());
+        setUser(null);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -259,19 +301,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [safetyActions, persistSafety],
   );
 
-  const deleteAccount = useCallback(() => {
-    const fresh = createDefaultUser();
-    fresh.name = 'Utilizator nou';
-    void persistUser(fresh);
+  const deleteAccount = useCallback(async () => {
+    userRef.current = null;
+    setUser(null);
+    await AsyncStorage.removeItem(STORAGE_KEY);
     persistSafety([]);
 
     try {
       const client = getSharedSupabaseClient();
-      void client.auth.signOut();
+      await client.auth.signOut();
     } catch {
       // Local profile reset is enough if no Supabase session exists.
     }
-  }, [persistUser, persistSafety]);
+  }, [persistSafety]);
 
   const isTrialActive = useMemo(() => {
     if (!user || user.driverStatus !== 'approved' || !user.trialEndsAt) return false;
@@ -298,6 +340,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       reportUser,
       blockUser,
       deleteAccount,
+      signOut,
+      loginAsDemo,
     }),
     [
       user,
@@ -312,6 +356,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       reportUser,
       blockUser,
       deleteAccount,
+      signOut,
+      loginAsDemo,
     ],
   );
 
