@@ -212,8 +212,10 @@ export default function DriveScreen() {
         <Text style={styles.bigTitle}>Abonament expirat</Text>
         <Text style={styles.lead}>Reînnoiește abonamentul pentru a relua cursele.</Text>
         <Card style={{ alignSelf: 'stretch', marginTop: spacing.md }}>
-          <Text style={styles.demoLabel}>Demo</Text>
-          <Button label="Am reînnoit pe web" variant="outline" fullWidth icon="autorenew" onPress={renewSubscriptionMock} />
+          <Button label="Alege Abonament (50 RON/lună)" fullWidth icon="credit-card" onPress={() => router.push('/(driver)/subscription')} />
+          <View style={{ height: spacing.sm }} />
+          <Text style={styles.demoLabel}>Demo Dev</Text>
+          <Button label="Activează Mock" variant="ghost" fullWidth onPress={renewSubscriptionMock} />
         </Card>
       </View>
     );
