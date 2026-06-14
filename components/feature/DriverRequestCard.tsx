@@ -15,8 +15,23 @@ interface DriverRequestCardProps {
 
 // Drivers act only via predefined buttons. No keyboard input allowed.
 export function DriverRequestCard({ request, onAccept, onIgnore }: DriverRequestCardProps) {
+  const [timeLeft, setTimeLeft] = require('react').useState(30);
+
+  require('react').useEffect(() => {
+    if (timeLeft <= 0) {
+      onIgnore(request.id);
+      return;
+    }
+    const timer = setInterval(() => setTimeLeft((t: number) => t - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft, request.id, onIgnore]);
+
   return (
     <View style={styles.card}>
+      {/* ProgressBar for countdown */}
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${(timeLeft / 30) * 100}%` }]} />
+      </View>
       <View style={styles.top}>
         <Avatar name={request.passengerName} color={request.avatarColor} size={44} />
         <View style={styles.info}>
@@ -94,13 +109,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     gap: spacing.md,
+    overflow: 'hidden',
   },
-  top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  progressTrack: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    height: 4,
+    backgroundColor: colors.surfaceAlt,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.accent,
+  },
+  top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.xs },
   info: { flex: 1, gap: 2 },
   name: { fontSize: fontSize.md, fontWeight: fontWeight.bold, color: colors.text },
   priceBox: { flexDirection: 'row', alignItems: 'baseline', gap: 2 },
-  price: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, color: colors.primaryDark },
-  currency: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.primaryDark },
+  price: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, color: colors.primary },
+  currency: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.primary },
   route: { gap: 2 },
   routeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   dotGreen: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.primary },

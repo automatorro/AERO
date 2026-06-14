@@ -50,35 +50,92 @@ export default function DriveScreen() {
     ]);
   };
 
+  // Stări locale pentru fluxul cursei
+  const [rideStep, setRideStep] = useState<'going_to_pickup' | 'arrived' | 'inprogress'>('going_to_pickup');
+  const [arrivedTime, setArrivedTime] = useState<number | null>(null);
+  const [timerLeft, setTimerLeft] = useState(180);
+
+  // Efect pentru timer-ul de așteptare pasager
+  require('react').useEffect(() => {
+    if (rideStep === 'arrived' && arrivedTime) {
+      const interval = setInterval(() => {
+        const diff = Math.floor((Date.now() - arrivedTime) / 1000);
+        const left = Math.max(0, 180 - diff);
+        setTimerLeft(left);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [rideStep, arrivedTime]);
+
   // Cursă activă
   if (driverActiveRide) {
     const r = driverActiveRide;
-    const pins: MapPin[] = [
+    const pins: MapPin[] = rideStep === 'going_to_pickup' || rideStep === 'arrived' ? [
       { x: r.pickup.x, y: r.pickup.y, kind: 'passenger', label: 'Pasager' },
+      { x: 0.5, y: 0.55, kind: 'driver', label: 'Tu' },
+    ] : [
       { x: r.dropoff.x, y: r.dropoff.y, kind: 'dropoff', label: r.dropoff.name },
+      { x: 0.5, y: 0.55, kind: 'driver', label: 'Tu' },
     ];
+
+    const formatTimer = (s: number) => {
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
     return (
       <View style={styles.container}>
         <MapSurface pins={pins} showRoute style={StyleSheet.absoluteFillObject} />
         <View style={[styles.activeSheet, { paddingBottom: insets.bottom + spacing.md }]}>
-          <Badge label="Cursă acceptată" tone="success" icon="check-circle" />
+          <Badge 
+            label={rideStep === 'going_to_pickup' ? 'Navighează spre preluare' : rideStep === 'arrived' ? 'Așteptare pasager' : 'Cursă în desfășurare'} 
+            tone={rideStep === 'arrived' ? 'warning' : 'success'} 
+            icon={rideStep === 'arrived' ? 'timer' : 'directions-car'} 
+          />
           <View style={styles.activeRow}>
             <Avatar name={r.offer?.driverName ?? 'P'} color={r.offer?.avatarColor ?? colors.primary} size={48} />
             <View style={{ flex: 1 }}>
               <Text style={styles.activeName}>{r.offer?.driverName}</Text>
               <Text style={styles.activeMeta}>{r.distanceKm} km · {r.durationMin} min</Text>
             </View>
-            <Text style={styles.activePrice}>{r.finalPrice} {CURRENCY}</Text>
+            {rideStep === 'arrived' ? (
+              <Text style={[styles.activePrice, { color: timerLeft <= 0 ? colors.danger : colors.text }]}>
+                {formatTimer(timerLeft)}
+              </Text>
+            ) : (
+              <Text style={styles.activePrice}>{r.finalPrice} {CURRENCY}</Text>
+            )}
           </View>
-          <Button label="Navighează (Waze / Maps)" fullWidth icon="navigation" onPress={() => openExternalNavigation(r.pickup)} />
-          <Button
-            label="Finalizează cursa"
-            variant="dark" fullWidth icon="flag"
-            onPress={() => {
-              completeDriverRide();
-              showAlert('Cursă finalizată', `Ai încasat ${r.finalPrice} ${CURRENCY}.`);
-            }}
-          />
+          
+          {rideStep === 'going_to_pickup' && (
+            <>
+              <Button label="Navighează (Waze / Maps)" fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.pickup)} />
+              <Button label="Am ajuns la Preluare" fullWidth icon="place" onPress={() => { setRideStep('arrived'); setArrivedTime(Date.now()); }} />
+            </>
+          )}
+
+          {rideStep === 'arrived' && (
+            <>
+              <Button label="Apelează pasagerul" fullWidth variant="outline" icon="call" onPress={() => showAlert('Apel', 'Apelare 0722000000...')} />
+              <Button label="Începe Cursa" fullWidth icon="play-arrow" onPress={() => setRideStep('inprogress')} />
+            </>
+          )}
+
+          {rideStep === 'inprogress' && (
+            <>
+              <Button label="Navighează spre Destinație" fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.dropoff)} />
+              <Button
+                label="Finalizează cursa"
+                variant="dark" fullWidth icon="flag"
+                onPress={() => {
+                  completeDriverRide();
+                  setRideStep('going_to_pickup'); // Reset local state
+                  showAlert('Cursă finalizată', `Ai încasat ${r.finalPrice} ${CURRENCY}. Bani adăugați în contul tău Stripe.`);
+                }}
+              />
+            </>
+          )}
         </View>
       </View>
     );
