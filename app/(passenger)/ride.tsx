@@ -47,7 +47,7 @@ export default function PassengerRideScreen() {
       {/* Bottom sheet */}
       <View style={[styles.sheet, { paddingBottom: spacing.md + insets.bottom }]}>
         {activeRide && (
-          <Pressable style={styles.activeBanner} onPress={() => router.push('/ride/active')}>
+          <Pressable style={styles.activeBanner} onPress={() => router.push('/(passenger)/active')}>
             <MaterialIcons name="directions-car" size={22} color="#fff" />
             <View style={{ flex: 1 }}>
               <Text style={styles.activeTitle}>Cursă în desfășurare</Text>
@@ -59,7 +59,7 @@ export default function PassengerRideScreen() {
           </Pressable>
         )}
 
-        <Pressable style={styles.searchBar} onPress={() => router.push('/ride/request')}>
+        <Pressable style={styles.searchBar} onPress={() => router.push('/(passenger)/request')}>
           <MaterialIcons name="search" size={20} color={colors.textFaint} />
           <Text style={styles.searchText}>Unde mergi?</Text>
         </Pressable>
@@ -71,7 +71,8 @@ export default function PassengerRideScreen() {
               style={styles.quickChip}
               onPress={() => {
                 setDropoff(p);
-                router.push('/ride/request');
+                router.push('/(passenger)/request');
+
               }}
             >
               <MaterialIcons name="bookmark-border" size={16} color={colors.accent} />
