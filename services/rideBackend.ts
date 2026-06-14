@@ -355,3 +355,43 @@ export async function uploadDriverDocument(input: {
   if (error) throw error;
   return data;
 }
+
+export async function triggerSOS(userId: string, targetName: string) {
+  return withFallback(async () => {
+    const client = getSharedSupabaseClient();
+    const { error } = await client.from('safety_actions').insert([
+      {
+        user_id: userId,
+        type: 'sos',
+        target_name: targetName,
+        reason: 'Emergency triggered in-app',
+      }
+    ]);
+    if (error) throw error;
+    return true;
+  }, false);
+}
+
+export async function sendChatMessage(rideId: string, senderId: string, text: string) {
+  return withFallback(async () => {
+    const client = getSharedSupabaseClient();
+    const { data, error } = await client.from('messages').insert([
+      { ride_id: rideId, sender_id: senderId, text }
+    ]).select().single();
+    if (error) throw error;
+    return data;
+  }, null);
+}
+
+export async function loadChatMessages(rideId: string) {
+  return withFallback(async () => {
+    const client = getSharedSupabaseClient();
+    const { data, error } = await client
+      .from('messages')
+      .select('*')
+      .eq('ride_id', rideId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return data ?? [];
+  }, []);
+}

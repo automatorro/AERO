@@ -111,13 +111,25 @@ export default function DriveScreen() {
           {rideStep === 'going_to_pickup' && (
             <>
               <Button label="Navighează (Waze / Maps)" fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.pickup)} />
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Button label="Chat" variant="outline" icon="chat" style={{ flex: 1 }} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: r.id } })} />
+                <Button label="SOS" variant="outline" icon="warning" style={{ flex: 1, borderColor: colors.danger }} textStyle={{ color: colors.danger }} onPress={async () => {
+                   try {
+                     await require('@/services/rideBackend').triggerSOS(user?.id, 'Passenger');
+                     showAlert('SOS Activ', 'AERO a fost alertat!');
+                   } catch(e) {}
+                }} />
+              </View>
               <Button label="Am ajuns la Preluare" fullWidth icon="place" onPress={() => { setRideStep('arrived'); setArrivedTime(Date.now()); }} />
             </>
           )}
 
           {rideStep === 'arrived' && (
             <>
-              <Button label="Apelează pasagerul" fullWidth variant="outline" icon="call" onPress={() => showAlert('Apel', 'Apelare 0722000000...')} />
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Button label="Apelează" variant="outline" icon="call" style={{ flex: 1 }} onPress={() => showAlert('Apel', 'Apelare 0722000000...')} />
+                <Button label="Chat" variant="outline" icon="chat" style={{ flex: 1 }} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: r.id } })} />
+              </View>
               <Button label="Începe Cursa" fullWidth icon="play-arrow" onPress={() => setRideStep('inprogress')} />
             </>
           )}
@@ -125,6 +137,14 @@ export default function DriveScreen() {
           {rideStep === 'inprogress' && (
             <>
               <Button label="Navighează spre Destinație" fullWidth variant="outline" icon="navigation" onPress={() => openExternalNavigation(r.dropoff)} />
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Button label="SOS" variant="outline" icon="warning" style={{ flex: 1, borderColor: colors.danger }} textStyle={{ color: colors.danger }} onPress={async () => {
+                   try {
+                     await require('@/services/rideBackend').triggerSOS(user?.id, 'Passenger');
+                     showAlert('SOS Activ', 'AERO a fost alertat!');
+                   } catch(e) {}
+                }} />
+              </View>
               <Button
                 label="Finalizează cursa"
                 variant="dark" fullWidth icon="flag"

@@ -49,12 +49,16 @@ export default function ActiveRideScreen() {
   const currentX = pickup.x + dx * driverPos;
   const currentY = pickup.y + dy * driverPos;
 
-  const handleSOS = () => {
-    showAlert('SOS', 'Se apelează 112 și se trimite SMS contactelor de urgență...', [{ text: 'Închide' }]);
+  const handleSOS = async () => {
+    try {
+      await require('@/services/rideBackend').triggerSOS(require('@/hooks/useAuth').useAuth().user?.id, offer.driverName);
+      showAlert('SOS Activ', 'Echipa AERO a fost alertată și monitorizează cursa!', [{ text: 'Închide' }]);
+    } catch (e) {
+      showAlert('Eroare', 'Eroare la alertare.');
+    }
   };
 
   const handleCompleteMock = () => {
-    // În loc să finalizăm cursa aici complet, mergem la ecranul de rating
     router.replace('/(passenger)/rating');
   };
 
@@ -113,7 +117,7 @@ export default function ActiveRideScreen() {
         </Card>
 
         <View style={styles.actionsRow}>
-          <Pressable style={styles.actionBtn}>
+          <Pressable style={styles.actionBtn} onPress={() => router.push({ pathname: '/chat/[rideId]', params: { rideId: activeRide.id } })}>
             <MaterialIcons name="chat" size={24} color={colors.text} />
             <Text style={styles.actionText}>Chat</Text>
           </Pressable>
