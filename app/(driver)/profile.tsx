@@ -21,9 +21,9 @@ export default function DriverProfileScreen() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleLogout = async () => {
-    showAlert('Deconectare', '{t('profile_logout_message')}', [
-      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
-      { text: '{t('profile_logout_confirm')}', onPress: async () => {
+    showAlert(t('profile_logout_title'), t('profile_logout_message'), [
+      { text: t('profile_logout_cancel'), style: 'cancel' },
+      { text: t('profile_logout_confirm'), onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
       }},
@@ -38,14 +38,14 @@ export default function DriverProfileScreen() {
   if (!user) return null;
 
   const statusTone = user.driverStatus === 'approved' ? (isTrialActive ? 'success' : 'danger') : 'warning';
-  const statusLabel = user.driverStatus === 'approved' ? (isTrialActive ? 'Activ' : 'Expirat') : '{t('profile_status_pending')}';
+  const statusLabel = user.driverStatus === 'approved' ? (isTrialActive ? 'Activ' : 'Expirat') : t('profile_status_pending');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <Avatar name={user.name} color={user.avatarColor} size={80} />
         <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.phone}>{user.phone || '{t('profile_no_phone')}'}</Text>
+        <Text style={styles.phone}>{user.phone || t('profile_no_phone')}</Text>
         
         <View style={styles.badgesRow}>
           <View style={styles.ratingBadge}>

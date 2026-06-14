@@ -43,9 +43,9 @@ export default function DriveScreen() {
   };
 
   const handleLogout = async () => {
-    showAlert('{t('profile_logout_title')}', '{t('profile_logout_message')}', [
-      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
-      { text: '{t('profile_logout_confirm')}', onPress: async () => {
+    showAlert(t('profile_logout_title'), t('profile_logout_message'), [
+      { text: t('profile_logout_cancel'), style: 'cancel' },
+      { text: t('profile_logout_confirm'), onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
       }},

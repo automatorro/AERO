@@ -21,9 +21,9 @@ export default function PassengerProfileScreen() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleLogout = async () => {
-    showAlert('Deconectare', '{t('profile_logout_message')}', [
-      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
-      { text: '{t('profile_logout_confirm')}', onPress: async () => {
+    showAlert(t('profile_logout_title'), t('profile_logout_message'), [
+      { text: t('profile_logout_cancel'), style: 'cancel' },
+      { text: t('profile_logout_confirm'), onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
       }},
@@ -32,7 +32,7 @@ export default function PassengerProfileScreen() {
 
   const handleDeleteAccount = () => {
     showAlert('Ștergere cont', 'Această acțiune este ireversibilă. Continuăm?', [
-      { text: '{t('profile_logout_cancel')}', style: 'cancel' },
+      { text: t('profile_logout_cancel'), style: 'cancel' },
       { text: 'Șterge', style: 'destructive', onPress: async () => {
         try { await getSharedSupabaseClient().auth.signOut(); } catch {}
         router.replace('/(auth)');
@@ -52,7 +52,7 @@ export default function PassengerProfileScreen() {
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <Avatar name={user.name} color={user.avatarColor} size={80} />
         <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.phone}>{user.phone || '{t('profile_no_phone')}'}</Text>
+        <Text style={styles.phone}>{user.phone || t('profile_no_phone')}</Text>
         <View style={styles.ratingBadge}>
           <MaterialIcons name="star" size={16} color="#F59E0B" />
           <Text style={styles.ratingText}>{user.rating.toFixed(1)} Rating Pasager</Text>
