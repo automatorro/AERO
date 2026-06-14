@@ -6,6 +6,7 @@ import { DriverRequest } from '@/services/types';
 import { CURRENCY } from '@/services/mockData';
 import { Avatar } from '@/components/ui/Avatar';
 import { RatingStars } from '@/components/ui/RatingStars';
+import { useI18n } from '@/contexts/I18nContext';
 
 interface DriverRequestCardProps {
   request: DriverRequest;
