@@ -77,6 +77,12 @@ export default function PassengerProfileScreen() {
             <Text style={styles.rowText}>Adrese salvate</Text>
             <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
           </Pressable>
+          <View style={styles.divider} />
+          <Pressable style={styles.row} onPress={() => router.push('/(auth)/language')}>
+            <View style={styles.rowIcon}><MaterialIcons name="language" size={24} color={colors.text} /></View>
+            <Text style={styles.rowText}>Limbă / Language</Text>
+            <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
+          </Pressable>
         </Card>
       </View>
 

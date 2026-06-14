@@ -6,28 +6,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontSize, fontWeight, radius, spacing } from '@/constants/theme';
 import { Button } from '@/components';
 import { useState } from 'react';
+import { useI18n } from '@/contexts/I18nContext';
+import { Language } from '@/constants/locales';
 
-const LANGUAGES = [
+const LANGUAGES: { code: Language, name: string, flag: string }[] = [
   { code: 'ro', name: 'Română', flag: '🇷🇴' },
   { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'hu', name: 'Magyar', flag: '🇭🇺' },
-  { code: 'bg', name: 'Български', flag: '🇧🇬' },
-  { code: 'pl', name: 'Polski', flag: '🇵🇱' },
-  // Celelalte 13 limbi vor fi adăugate în Etapa 8 (i18n complet)
+  // Celelalte limbi din MVP
 ];
 
 export default function LanguageScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState('ro');
+  const { language, setLanguage } = useI18n();
+  const [selected, setSelected] = useState<Language>(language);
 
-  const handleContinue = () => {
-    // Aici se va salva preferința de limbă (în i18next / async storage)
+  const handleContinue = async () => {
+    await setLanguage(selected);
     router.push('/(auth)');
   };
 

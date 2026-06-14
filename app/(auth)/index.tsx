@@ -5,12 +5,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontSize, fontWeight, radius, spacing } from '@/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useI18n } from '@/contexts/I18nContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function LandingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
 
   return (
     <View style={styles.container}>
@@ -44,17 +46,14 @@ export default function LandingScreen() {
           <Text style={styles.logo}>AERO</Text>
         </View>
 
-        <Text style={styles.tagline}>Abonamente · Prețuri corecte</Text>
+        <Text style={styles.tagline}>{t('landing_tagline')}</Text>
       </View>
 
       {/* Bottom CTA */}
       <View style={[styles.bottom, { paddingBottom: insets.bottom + spacing.xl }]}>
-        <Text style={styles.headline}>Negociază prețul cursei.</Text>
-        <Text style={styles.headline}>Abonează-te și{'\n'}călătorește.</Text>
-        <Text style={styles.subtext}>
-          Un marketplace șofer–pasager unde tu propui{'\n'}
-          prețul și alegi planul care ți se potrivește.
-        </Text>
+        <Text style={styles.headline}>{t('landing_headline_1')}</Text>
+        <Text style={styles.headline}>{t('landing_headline_2')}</Text>
+        <Text style={styles.subtext}>{t('landing_subtext')}</Text>
 
         {/* Buton Pasager */}
         <Pressable
@@ -62,7 +61,7 @@ export default function LandingScreen() {
           onPress={() => router.push('/(auth)/register?role=passenger')}
         >
           <MaterialIcons name="airline-seat-recline-normal" size={20} color={colors.primary} />
-          <Text style={styles.btnPrimaryText}>Sunt pasager</Text>
+          <Text style={styles.btnPrimaryText}>{t('landing_passenger_btn')}</Text>
         </Pressable>
 
         {/* Buton Șofer */}
@@ -71,13 +70,13 @@ export default function LandingScreen() {
           onPress={() => router.push('/(auth)/register?role=driver')}
         >
           <MaterialIcons name="local-taxi" size={20} color="#FFFFFF" />
-          <Text style={styles.btnSecondaryText}>Sunt șofer</Text>
+          <Text style={styles.btnSecondaryText}>{t('landing_driver_btn')}</Text>
         </Pressable>
 
         {/* Link login */}
         <Pressable onPress={() => router.push('/(auth)/login')} style={styles.loginLink}>
-          <Text style={styles.loginText}>Ai deja cont? </Text>
-          <Text style={[styles.loginText, styles.loginTextBold]}>Conectează-te</Text>
+          <Text style={styles.loginText}>{t('landing_login_q')}</Text>
+          <Text style={[styles.loginText, styles.loginTextBold]}>{t('landing_login_link')}</Text>
         </Pressable>
       </View>
     </View>

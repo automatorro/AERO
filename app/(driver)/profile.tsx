@@ -85,6 +85,12 @@ export default function DriverProfileScreen() {
             <Text style={styles.rowText}>Dark Mode</Text>
             <Switch value={isDarkMode} onValueChange={toggleDarkMode} trackColor={{ true: colors.primary }} />
           </View>
+          <View style={styles.divider} />
+          <Pressable style={styles.row} onPress={() => router.push('/(auth)/language')}>
+            <View style={styles.rowIcon}><MaterialIcons name="language" size={24} color={colors.text} /></View>
+            <Text style={styles.rowText}>Limbă / Language</Text>
+            <MaterialIcons name="chevron-right" size={24} color={colors.textFaint} />
+          </Pressable>
         </Card>
       </View>
 
