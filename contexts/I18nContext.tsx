@@ -15,7 +15,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem('user_language').then(val => {
-      if (val && (val === 'ro' || val === 'en' || val === 'es')) {
+      if (val && val in translations) {
         setLanguageState(val as Language);
       }
     });

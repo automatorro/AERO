@@ -12,8 +12,27 @@ import { Language } from '@/constants/locales';
 const LANGUAGES: { code: Language, name: string, flag: string }[] = [
   { code: 'ro', name: 'Română', flag: '🇷🇴' },
   { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },
-  // Celelalte limbi din MVP
+  { code: 'pt', name: 'Português', flag: '🇵🇹' },
+  { code: 'hu', name: 'Magyar', flag: '🇭🇺' },
+  { code: 'bg', name: 'Български', flag: '🇧🇬' },
+  { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+  { code: 'cs', name: 'Čeština', flag: '🇨🇿' },
+  { code: 'sk', name: 'Slovenčina', flag: '🇸🇰' },
+  { code: 'hr', name: 'Hrvatski', flag: '🇭🇷' },
+  { code: 'sr', name: 'Српски', flag: '🇷🇸' },
+  { code: 'sl', name: 'Slovenščina', flag: '🇸🇮' },
+  { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+  { code: 'el', name: 'Ελληνικά', flag: '🇬🇷' },
+  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+  { code: 'uk', name: 'Українська', flag: '🇺🇦' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+  { code: 'da', name: 'Dansk', flag: '🇩🇰' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
 ];
 
 export default function LanguageScreen() {
